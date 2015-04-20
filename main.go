@@ -1,12 +1,14 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 	"golang.org/x/net/html/charset"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -23,11 +25,14 @@ type Feed struct {
 }
 
 type Channel struct {
-	ID    int
-	Title string `xml:"title" json:"title"`
-	URL   string `json:"url" sql:"unique_index"`
-	Items []Item `xml:"item" json:"items"`
-	TTL   int    `xml:"ttl" json:"ttl"`
+	ID        int
+	Title     string `xml:"title" json:"title"`
+	URL       string `json:"url" sql:"unique_index"`
+	Items     []Item `xml:"item" json:"items"`
+	TTL       int    `xml:"ttl" json:"ttl"`
+	Sum       string `sql:"index"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type Item struct {
@@ -37,7 +42,23 @@ type Item struct {
 	Link      string  `xml:"link" json:"link"`
 	PubDate   string  `xml:"pubDate" json:"pubDate"`
 	Unix      *int64  `json:"unix"`
-	GUID      *string `xml:"guid" json:"guid" sql:"unique_index"`
+	GUID      *string `xml:"guid" json:"guid" sql:"index"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+type Alias struct {
+	ID        int
+	Alias     string `sql:"unique_index"`
+	Original  string `sql:"index"`
+	CreatedAt time.Time
+}
+
+type Invalid struct {
+	ID        int
+	URL       string `sql:"unique_index"`
+	Error     string
+	CreatedAt time.Time
 }
 
 func (c Channel) Frequency() int {
@@ -70,56 +91,71 @@ func (c Channel) Timeout() int {
 	return minTimeout
 }
 
-func getChannel(url string) (*Channel, error) {
+func fetchChannel(url string) (*Channel, error) {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load channel %s: %s", url, err)
+		return nil, fmt.Errorf("Failed to load channel '%s': %s", url, err)
 	}
 
 	decoder := xml.NewDecoder(resp.Body)
 	decoder.CharsetReader = charset.NewReaderLabel
 	var f Feed
 	if err := decoder.Decode(&f); err != nil {
-		return nil, fmt.Errorf("Failed to decode channel %s: %s", url, err)
+		return nil, fmt.Errorf("Failed to decode channel '%s': %s", url, err)
 	}
 
 	c := f.Channel
 	if c.Title == "" || len(c.Items) <= 0 {
-		return nil, fmt.Errorf("Channel %s is invalid", url)
+		return nil, fmt.Errorf("Invalid channel '%s'", url)
 	}
-	c.URL = url
 
-	// Add GUID's
+	// Enrich
+	c.URL = url
+	data, _ := ioutil.ReadAll(resp.Body)
+	c.Sum = fmt.Sprintf("%x", sha256.Sum256(data))
 	for key, item := range c.Items {
 		if item.GUID == nil {
 			guid := fmt.Sprintf("%s:%s:%s", url, item.PubDate, item.Title)
-			c.Items[key].GUID = &guid
+			item.GUID = &guid
 		}
+		c.Items[key] = item
 	}
-
-	// Add Unix's
 	for key, item := range c.Items {
+		if item.PubDate == "" {
+			item.PubDate = time.Now().Format(time.RFC1123Z)
+		}
 		t, err := time.Parse(time.RFC1123Z, item.PubDate)
 		if err != nil {
-			log.Printf("Failed to parse time for channel %s: %s\n", url, err)
+			log.Printf("Failed to parse time for channel '%s': %s\n", url, err)
 			break
 		}
 		unix := t.Unix()
-		c.Items[key].Unix = &unix
+		item.Unix = &unix
+		c.Items[key] = item
 	}
 
 	return &c, nil
 }
 
-func saveChannel(channel *Channel, db *gorm.DB) {
+func saveChannel(channel *Channel, db *gorm.DB) error {
 
 	dbChannel := Channel{URL: channel.URL}
-	if db.Where(&dbChannel).First(&dbChannel).RecordNotFound() {
-		log.Printf("Creating channel %s\n", channel.URL)
-		db.Create(channel)
-		return
+	dbDuplicate := Channel{Sum: channel.Sum}
+	dbChannelFound := !db.Where(&dbChannel).First(&dbChannel).RecordNotFound()
+	dbDuplicateFound := !db.Where(&dbDuplicate).First(&dbDuplicate).RecordNotFound()
+
+	if dbDuplicateFound {
+		createAlias(&dbChannel, &dbDuplicate, dbChannelFound, db)
+		return fmt.Errorf("Duplicate channel '%s' found, alias created", dbDuplicate.URL)
 	}
+
+	if !dbChannelFound {
+		log.Printf("Creating channel '%s'\n", channel.URL)
+		db.Create(&channel)
+		return nil
+	}
+
 	db.Model(&dbChannel).Related(&dbChannel.Items)
 
 	// Compare items to existing items
@@ -138,58 +174,89 @@ func saveChannel(channel *Channel, db *gorm.DB) {
 		item.ID = dbID
 		db.Omit("GUID", "ChannelID").Save(&item)
 	}
+	return nil
+}
+
+func createAlias(alias *Channel, original *Channel, delete bool, db *gorm.DB) {
+	if alias.URL == original.URL {
+		return
+	}
+	log.Printf("Creating alias '%s' for '%s'\n", alias.URL, original.URL)
+	db.Create(&Alias{Alias: alias.URL, Original: original.URL})
+	if delete {
+		deleteChannel(alias, db)
+	}
+}
+
+func deleteChannel(channel *Channel, db *gorm.DB) {
+	log.Printf("Deleting channel '%s'\n", channel.URL)
+	db.Where(&Alias{Original: channel.URL}).Delete(Alias{})
+	db.Where(&Item{ChannelID: channel.ID}).Delete(Item{})
+	db.Delete(channel)
 }
 
 func pollChannel(url string, db *gorm.DB) {
 
-	channel, err := getChannel(url)
+	channel, err := fetchChannel(url)
 	if err != nil {
-		log.Println(err)
+		db.Create(&Invalid{URL: url, Error: err.Error()})
+		log.Printf("Marked '%s' as invalid: %s", url, err)
 		return
 	}
-	
-	saveChannel(channel, db)
+
+	err = saveChannel(channel, db)
+	if err != nil {
+		log.Printf("Failed to save channel '%s': %s\n", url, err)
+		return
+	}
 
 	timeout := channel.Timeout()
-	log.Printf("Polled %s, %d minutes until next poll\n", url, timeout)
+	log.Printf("Polled '%s', %d minutes until next poll\n", url, timeout)
 	time.Sleep(time.Duration(timeout) * time.Minute)
 	pollChannel(url, db)
 }
 
+func getChannel(url string, db *gorm.DB, repeat bool) (*Channel, bool) {
+	channel := Channel{URL: url}
+	if db.Where(&channel).First(&channel).RecordNotFound() {
+		alias := Alias{Alias: url}
+		if !repeat && !db.Where(&alias).First(&alias).RecordNotFound() {
+			return getChannel(alias.Original, db, true)
+		}
+		invalid := Invalid{URL: url}
+		if !db.Where(&invalid).First(&invalid).RecordNotFound() {
+			return nil, false
+		}
+		go pollChannel(url, db)
+		log.Printf("Started polling '%s'\n", url)
+		return nil, true
+	}
+	db.Model(&channel).Related(&channel.Items)
+	return &channel, true
+}
+
 func handler(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 
-	if r.Method == "GET" {
-		fmt.Fprintf(w, "Ping!\n")
-		return
-	}
-
-	decoder := json.NewDecoder(r.Body)
-	var urls []string
-	err := decoder.Decode(&urls)
-	if err != nil {
-		http.Error(w, err.Error(), 400)
-		return
-	}
-
-	channels := make([]Channel, 0, len(urls))
-	for _, url := range urls {
-		channel := Channel{}
-		if db.Where(Channel{URL: url}).First(&channel).RecordNotFound() {
-			go pollChannel(url, db)
-			log.Printf("Started polling %s\n", url)
-			continue
-		}
-		db.Model(&channel).Related(&channel.Items)
-		channels = append(channels, channel)
-	}
-
-	json, err := json.Marshal(channels)
-	if err != nil {
-		log.Printf("Unable to marshal channels: %s\n", err)
-	}
-
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	fmt.Fprint(w, string(json))
+
+	if r.Method != "GET" {
+		http.Error(w, fmt.Sprintf("Unsupported method '%s'\n", r.Method), 501)
+		return
+	}
+
+	url := r.URL.Query().Get("url")
+	channel, polling := getChannel(url, db, false)
+	if channel == nil {
+		fmt.Fprintf(w, "%t\n", polling)
+		return
+	}
+
+	json, err := json.Marshal(channel)
+	if err != nil {
+		log.Printf("Unable to marshal channel '%s': %s\n", url, err)
+	}
+
+	fmt.Fprintln(w, string(json))
 }
 
 func getDB() *gorm.DB {
@@ -202,7 +269,7 @@ func getDB() *gorm.DB {
 	}
 	db.DB()
 	db.SingularTable(true)
-	db.AutoMigrate(&Channel{}, &Item{})
+	db.AutoMigrate(&Channel{}, &Item{}, &Alias{}, &Invalid{})
 	return &db
 }
 
@@ -215,7 +282,7 @@ func main() {
 	db.Model(&Channel{}).Pluck("URL", &urls)
 	for _, url := range urls {
 		go pollChannel(url, db)
-		log.Printf("Started polling %s\n", url)
+		log.Printf("Started polling '%s'\n", url)
 	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
