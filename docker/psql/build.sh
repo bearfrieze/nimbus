@@ -1,2 +1,3 @@
 #!/bin/bash
-docker build -t psql .
+NAME=nimbus-dev-psql
+docker build -t $NAME .

@@ -74,19 +74,19 @@ func getChannel(url string) (*Channel, error) {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf(`Failed to load channel "%s": %s`, url, err)
+		return nil, fmt.Errorf("Failed to load channel %s: %s", url, err)
 	}
 
 	decoder := xml.NewDecoder(resp.Body)
 	decoder.CharsetReader = charset.NewReaderLabel
 	var f Feed
 	if err := decoder.Decode(&f); err != nil {
-		return nil, fmt.Errorf(`Failed to decode channel "%s": %s`, url, err)
+		return nil, fmt.Errorf("Failed to decode channel %s: %s", url, err)
 	}
 
 	c := f.Channel
 	if c.Title == "" || len(c.Items) <= 0 {
-		return nil, fmt.Errorf(`Channel "%s" is invalid`, url)
+		return nil, fmt.Errorf("Channel %s is invalid", url)
 	}
 	c.URL = url
 
@@ -102,7 +102,7 @@ func getChannel(url string) (*Channel, error) {
 	for key, item := range c.Items {
 		t, err := time.Parse(time.RFC1123Z, item.PubDate)
 		if err != nil {
-			log.Printf(`Failed to parse time for channel "%s": %s\n`, url, err)
+			log.Printf("Failed to parse time for channel %s: %s\n", url, err)
 			break
 		}
 		unix := t.Unix()
@@ -115,51 +115,45 @@ func getChannel(url string) (*Channel, error) {
 func saveChannel(channel *Channel, db *gorm.DB) {
 
 	dbChannel := Channel{URL: channel.URL}
-	db.Where(&dbChannel).First(&dbChannel)
-	db.Model(&dbChannel).Related(&dbChannel.Items)
-
-	fmt.Println(channel.URL)
-	for _, dbItem := range dbChannel.Items {
-		fmt.Printf("%s\n", *dbItem.GUID)
+	if db.Where(&dbChannel).First(&dbChannel).RecordNotFound() {
+		log.Printf("Creating channel %s\n", channel.URL)
+		db.Create(channel)
+		return
 	}
+	db.Model(&dbChannel).Related(&dbChannel.Items)
 
 	// Compare items to existing items
 	// Update existing items and create new ones
-	dbItems := make(map[string]*Item, len(dbChannel.Items))
+	dbItems := make(map[string]int, len(dbChannel.Items))
 	for _, dbItem := range dbChannel.Items {
-		dbItems[*dbItem.GUID] = &dbItem
+		dbItems[*dbItem.GUID] = dbItem.ID
 	}
 	for _, item := range channel.Items {
-		dbItem, exists := dbItems[*item.GUID]
+		dbID, exists := dbItems[*item.GUID]
 		if !exists {
 			item.ChannelID = dbChannel.ID
 			db.Create(&item)
-			dbChannel.Items = append(dbChannel.Items, item)
 			continue
 		}
-		item.ID = dbItem.ID
-		db.Omit("GUID").Save(&item)
+		item.ID = dbID
+		db.Omit("GUID", "ChannelID").Save(&item)
 	}
 }
 
-func pollChannel(url string, db *gorm.DB, create bool) {
+func pollChannel(url string, db *gorm.DB) {
 
 	channel, err := getChannel(url)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-
-	if create {
-		db.Create(channel)
-	} else {
-		saveChannel(channel, db)
-	}
+	
+	saveChannel(channel, db)
 
 	timeout := channel.Timeout()
-	log.Printf("Polled: %s, Timeout: %d\n", url, timeout)
+	log.Printf("Polled %s, %d minutes until next poll\n", url, timeout)
 	time.Sleep(time.Duration(timeout) * time.Minute)
-	pollChannel(url, db, false)
+	pollChannel(url, db)
 }
 
 func handler(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
@@ -181,8 +175,8 @@ func handler(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	for _, url := range urls {
 		channel := Channel{}
 		if db.Where(Channel{URL: url}).First(&channel).RecordNotFound() {
-			go pollChannel(url, db, true)
-			log.Printf("Polling initiated: %s\n", url)
+			go pollChannel(url, db)
+			log.Printf("Started polling %s\n", url)
 			continue
 		}
 		db.Model(&channel).Related(&channel.Items)
@@ -200,7 +194,7 @@ func handler(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 
 func getDB() *gorm.DB {
 
-	args := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable", os.Getenv("PGUSER"), os.Getenv("PGPASSWORD"), os.Getenv("PGDATABASE"), os.Getenv("PGHOST"), os.Getenv("PGPORT"))
+	args := fmt.Sprintf("sslmode=disable host=%s port=%s dbname=%s user=%s password=%s", os.Getenv("PGHOST"), os.Getenv("PGPORT"), os.Getenv("PGDATABASE"), os.Getenv("PGUSER"), os.Getenv("PGPASSWORD"))
 	log.Printf("Connecting to postgres: %s\n", args)
 	db, err := gorm.Open("postgres", args)
 	if err != nil {
@@ -220,8 +214,8 @@ func main() {
 	var urls []string
 	db.Model(&Channel{}).Pluck("URL", &urls)
 	for _, url := range urls {
-		go pollChannel(url, db, false)
-		log.Printf("Polling initiated: %s\n", url)
+		go pollChannel(url, db)
+		log.Printf("Started polling %s\n", url)
 	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -229,6 +223,6 @@ func main() {
 	})
 
 	port := os.Getenv("PORT")
-	fmt.Printf("Cumulonimbus is listening on port %s\n", port)
+	log.Printf("Listening on port %s\n", port)
 	http.ListenAndServe(":"+port, nil)
 }

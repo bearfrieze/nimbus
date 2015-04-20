@@ -1,2 +1,4 @@
 #!/bin/bash
-docker run -it --name psql --rm --link pg:pg psql
+NAME=nimbus-dev-psql
+PG=nimbus-dev-postgres
+docker run -it --name $NAME --rm --link $PG:pg $NAME
