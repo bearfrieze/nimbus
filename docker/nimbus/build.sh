@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build -t nimbus-dev .
+docker build -t nimbus-dev-nimbus .
