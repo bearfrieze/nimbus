@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"bytes"
 )
 
 const (
@@ -20,31 +21,35 @@ const (
 	maxTimeout = 60 * 24
 )
 
+var (
+	formats = []string{time.RFC1123, time.RFC1123Z}
+)
+
 type Feed struct {
 	Channel Channel `xml:"channel"`
 }
 
 type Channel struct {
-	ID        int
+	ID        int `json:"-"`
 	Title     string `xml:"title" json:"title"`
 	URL       string `json:"url" sql:"unique_index"`
 	Items     []Item `xml:"item" json:"items"`
-	TTL       int    `xml:"ttl" json:"ttl"`
-	Sum       string `sql:"index"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	TTL       int    `xml:"ttl" json:"-"`
+	Sum       string `json:"-" sql:"index"`
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"-"`
 }
 
 type Item struct {
-	ID        int
-	ChannelID int     `sql:"index"`
+	ID        int `json:"-"`
+	ChannelID int     `json:"-" sql:"index"`
 	Title     string  `xml:"title" json:"title"`
 	Link      string  `xml:"link" json:"link"`
 	PubDate   string  `xml:"pubDate" json:"pubDate"`
 	Unix      *int64  `json:"unix"`
 	GUID      *string `xml:"guid" json:"guid" sql:"index"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"-"`
 }
 
 type Alias struct {
@@ -64,13 +69,14 @@ type Invalid struct {
 func (c Channel) Frequency() int {
 
 	var count, sum int64
-	for i := 0; i < len(c.Items)-1; i++ {
-		if c.Items[0].Unix == nil || c.Items[1].Unix == nil {
+	for i := 0; i < len(c.Items) - 1; i++ {
+		if c.Items[i].Unix == nil || c.Items[i + 1].Unix == nil {
 			continue
 		}
-		sum += *c.Items[0].Unix - *c.Items[1].Unix
+		sum += *c.Items[i].Unix - *c.Items[i + 1].Unix
 		count++
 	}
+	// Avoid division by zero...
 	if count == 0 {
 		return minTimeout
 	}
@@ -79,41 +85,45 @@ func (c Channel) Frequency() int {
 
 func (c Channel) Timeout() int {
 
+	timeout := 0
 	if c.TTL != 0 {
-		return c.TTL
+		timeout = c.TTL
+	} else {
+		timeout = c.Frequency() / 2
 	}
-	if freq := c.Frequency() / 2; freq > minTimeout {
-		if freq > maxTimeout {
-			return maxTimeout
-		}
-		return freq
+
+	if (timeout < minTimeout) {
+		return minTimeout
+	} else if (timeout > maxTimeout) {
+		return maxTimeout
 	}
-	return minTimeout
+
+	return timeout
 }
 
 func fetchChannel(url string) (*Channel, error) {
 
-	resp, err := http.Get(url)
+	r, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to load channel '%s': %s", url, err)
 	}
+	data, _ := ioutil.ReadAll(r.Body)
 
-	decoder := xml.NewDecoder(resp.Body)
+	decoder := xml.NewDecoder(bytes.NewReader(data))
 	decoder.CharsetReader = charset.NewReaderLabel
 	var f Feed
 	if err := decoder.Decode(&f); err != nil {
 		return nil, fmt.Errorf("Failed to decode channel '%s': %s", url, err)
 	}
-
 	c := f.Channel
 	if c.Title == "" || len(c.Items) <= 0 {
 		return nil, fmt.Errorf("Invalid channel '%s'", url)
 	}
 
-	// Enrich
 	c.URL = url
-	data, _ := ioutil.ReadAll(resp.Body)
+	
 	c.Sum = fmt.Sprintf("%x", sha256.Sum256(data))
+
 	for key, item := range c.Items {
 		if item.GUID == nil {
 			guid := fmt.Sprintf("%s:%s:%s", url, item.PubDate, item.Title)
@@ -121,11 +131,18 @@ func fetchChannel(url string) (*Channel, error) {
 		}
 		c.Items[key] = item
 	}
+
 	for key, item := range c.Items {
 		if item.PubDate == "" {
 			item.PubDate = time.Now().Format(time.RFC1123Z)
 		}
-		t, err := time.Parse(time.RFC1123Z, item.PubDate)
+		var t time.Time
+		for _, format := range formats {
+			t, err = time.Parse(format, item.PubDate)
+			if err == nil {
+				break
+			}
+		}
 		if err != nil {
 			log.Printf("Failed to parse time for channel '%s': %s\n", url, err)
 			break
@@ -145,7 +162,7 @@ func saveChannel(channel *Channel, db *gorm.DB) error {
 	dbChannelFound := !db.Where(&dbChannel).First(&dbChannel).RecordNotFound()
 	dbDuplicateFound := !db.Where(&dbDuplicate).First(&dbDuplicate).RecordNotFound()
 
-	if dbDuplicateFound {
+	if dbDuplicateFound && !(dbChannelFound && dbChannel.ID == dbDuplicate.ID) {
 		createAlias(&dbChannel, &dbDuplicate, dbChannelFound, db)
 		return fmt.Errorf("Duplicate channel '%s' found, alias created", dbDuplicate.URL)
 	}
@@ -172,7 +189,7 @@ func saveChannel(channel *Channel, db *gorm.DB) error {
 			continue
 		}
 		item.ID = dbID
-		db.Omit("GUID", "ChannelID").Save(&item)
+		db.Omit("GUID", "ChannelID", "PubDate", "Unix").Save(&item)
 	}
 	return nil
 }
@@ -251,7 +268,7 @@ func handler(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 		return
 	}
 
-	json, err := json.Marshal(channel)
+	json, err := json.Marshal(&channel)
 	if err != nil {
 		log.Printf("Unable to marshal channel '%s': %s\n", url, err)
 	}
@@ -268,6 +285,9 @@ func getDB() *gorm.DB {
 		log.Fatalf("%s\n", err)
 	}
 	db.DB()
+	db.DB().Ping()
+	db.DB().SetMaxIdleConns(10)
+	db.DB().SetMaxOpenConns(100)
 	db.SingularTable(true)
 	db.AutoMigrate(&Channel{}, &Item{}, &Alias{}, &Invalid{})
 	return &db
