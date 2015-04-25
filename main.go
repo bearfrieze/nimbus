@@ -7,6 +7,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/jinzhu/gorm"
+	"github.com/kennygrant/sanitize"
 	_ "github.com/lib/pq"
 	"golang.org/x/net/html/charset"
 	"io/ioutil"
@@ -117,27 +118,26 @@ func fetchChannel(url string) (*Channel, error) {
 	if err := decoder.Decode(&f); err != nil {
 		return nil, fmt.Errorf("Failed to decode channel '%s': %s", url, err)
 	}
+
 	c := f.Channel
 	if c.Title == "" || len(c.Items) <= 0 {
 		return nil, fmt.Errorf("Invalid channel '%s'", url)
 	}
 
-	c.URL = url
-
-	c.Sum = fmt.Sprintf("%x", sha256.Sum256(data))
-
 	for key, item := range c.Items {
+
+		// Add GUIDs if missing
 		if item.GUID == nil {
 			guid := fmt.Sprintf("%s:%s:%s", url, item.PubDate, item.Title)
 			item.GUID = &guid
 		}
-		c.Items[key] = item
-	}
 
-	for key, item := range c.Items {
+		// Enrich publication dates
 		if item.PubDate == "" {
 			item.PubDate = time.Now().Format(time.RFC1123Z)
 		}
+
+		// Add unix timestamps
 		var t time.Time
 		for _, format := range formats {
 			t, err = time.Parse(format, item.PubDate)
@@ -147,13 +147,20 @@ func fetchChannel(url string) (*Channel, error) {
 		}
 		if err != nil {
 			log.Printf("Failed to parse time for channel '%s': %s\n", url, err)
-			break
 		}
 		unix := t.Unix()
 		item.Unix = &unix
+
+		// Sanitize text
+		fmt.Println(item.Title)
+		item.Title = sanitize.HTML(item.Title)
+		fmt.Println(item.Title)
+
 		c.Items[key] = item
 	}
 
+	c.URL = url
+	c.Sum = fmt.Sprintf("%x", sha256.Sum256(data))
 	c.PollAt = time.Now().Add(time.Duration(c.Timeout()) * time.Minute)
 
 	return &c, nil
