@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/json"
 	"encoding/xml"
@@ -13,12 +14,12 @@ import (
 	"net/http"
 	"os"
 	"time"
-	"bytes"
 )
 
 const (
-	minTimeout = 60
-	maxTimeout = 60 * 24
+	minTimeout    = 60
+	maxTimeout    = 60 * 24
+	pollFrequency = 15
 )
 
 var (
@@ -30,24 +31,25 @@ type Feed struct {
 }
 
 type Channel struct {
-	ID        int `json:"-"`
-	Title     string `xml:"title" json:"title"`
-	URL       string `json:"url" sql:"unique_index"`
-	Items     []Item `xml:"item" json:"items"`
-	TTL       int    `xml:"ttl" json:"-"`
-	Sum       string `json:"-" sql:"index"`
+	ID        int       `json:"-"`
+	Title     string    `xml:"title" json:"title"`
+	URL       string    `json:"url" sql:"unique_index"`
+	Items     []Item    `xml:"item" json:"items"`
+	TTL       int       `xml:"ttl" json:"-"`
+	Sum       string    `json:"-" sql:"index"`
+	PollAt    time.Time `json:"poll_at" sql:"index"`
 	CreatedAt time.Time `json:"-"`
-	UpdatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Item struct {
-	ID        int `json:"-"`
-	ChannelID int     `json:"-" sql:"index"`
-	Title     string  `xml:"title" json:"title"`
-	Link      string  `xml:"link" json:"link"`
-	PubDate   string  `xml:"pubDate" json:"pubDate"`
-	Unix      *int64  `json:"unix"`
-	GUID      *string `xml:"guid" json:"guid" sql:"index"`
+	ID        int       `json:"-"`
+	ChannelID int       `json:"-" sql:"index"`
+	Title     string    `xml:"title" json:"title"`
+	Link      string    `xml:"link" json:"link"`
+	PubDate   string    `xml:"pubDate" json:"pubDate"`
+	Unix      *int64    `json:"unix"`
+	GUID      *string   `xml:"guid" json:"guid" sql:"index"`
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 }
@@ -69,11 +71,11 @@ type Invalid struct {
 func (c Channel) Frequency() int {
 
 	var count, sum int64
-	for i := 0; i < len(c.Items) - 1; i++ {
-		if c.Items[i].Unix == nil || c.Items[i + 1].Unix == nil {
+	for i := 0; i < len(c.Items)-1; i++ {
+		if c.Items[i].Unix == nil || c.Items[i+1].Unix == nil {
 			continue
 		}
-		sum += *c.Items[i].Unix - *c.Items[i + 1].Unix
+		sum += *c.Items[i].Unix - *c.Items[i+1].Unix
 		count++
 	}
 	// Avoid division by zero...
@@ -92,9 +94,9 @@ func (c Channel) Timeout() int {
 		timeout = c.Frequency() / 2
 	}
 
-	if (timeout < minTimeout) {
+	if timeout < minTimeout {
 		return minTimeout
-	} else if (timeout > maxTimeout) {
+	} else if timeout > maxTimeout {
 		return maxTimeout
 	}
 
@@ -121,7 +123,7 @@ func fetchChannel(url string) (*Channel, error) {
 	}
 
 	c.URL = url
-	
+
 	c.Sum = fmt.Sprintf("%x", sha256.Sum256(data))
 
 	for key, item := range c.Items {
@@ -152,6 +154,8 @@ func fetchChannel(url string) (*Channel, error) {
 		c.Items[key] = item
 	}
 
+	c.PollAt = time.Now().Add(time.Duration(c.Timeout()) * time.Minute)
+
 	return &c, nil
 }
 
@@ -173,6 +177,10 @@ func saveChannel(channel *Channel, db *gorm.DB) error {
 		return nil
 	}
 
+	channel.ID = dbChannel.ID
+	channel.UpdatedAt = time.Now()
+	db.Omit("Items", "CreatedAt").Save(&channel)
+
 	db.Model(&dbChannel).Related(&dbChannel.Items)
 
 	// Compare items to existing items
@@ -189,7 +197,8 @@ func saveChannel(channel *Channel, db *gorm.DB) error {
 			continue
 		}
 		item.ID = dbID
-		db.Omit("GUID", "ChannelID", "PubDate", "Unix").Save(&item)
+		item.UpdatedAt = time.Now()
+		db.Omit("GUID", "ChannelID", "PubDate", "Unix", "CreatedAt").Save(&item)
 	}
 	return nil
 }
@@ -227,10 +236,18 @@ func pollChannel(url string, db *gorm.DB) {
 		return
 	}
 
-	timeout := channel.Timeout()
-	log.Printf("Polled '%s', %d minutes until next poll\n", url, timeout)
-	time.Sleep(time.Duration(timeout) * time.Minute)
-	pollChannel(url, db)
+	log.Printf("Polled '%s', next poll at %v\n", url, channel.PollAt)
+}
+
+func pollChannels(now *time.Time, db *gorm.DB) {
+
+	var urls []string
+	var nextPoll = now.Add((pollFrequency + 1) * time.Second)
+	db.Model(&Channel{}).Where("poll_at < ?", nextPoll).Pluck("URL", &urls)
+
+	for _, url := range urls {
+		go pollChannel(url, db)
+	}
 }
 
 func getChannel(url string, db *gorm.DB, repeat bool) (*Channel, bool) {
@@ -298,12 +315,11 @@ func main() {
 	db := getDB()
 
 	// Start polling channels
-	var urls []string
-	db.Model(&Channel{}).Pluck("URL", &urls)
-	for _, url := range urls {
-		go pollChannel(url, db)
-		log.Printf("Started polling '%s'\n", url)
-	}
+	go func() {
+		for now := range time.Tick(pollFrequency * time.Second) {
+			go pollChannels(&now, db)
+		}
+	}()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		handler(w, r, db)
