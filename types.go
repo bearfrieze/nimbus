@@ -45,3 +45,38 @@ type Invalid struct {
     Error     string
     CreatedAt time.Time
 }
+
+func (c Channel) Frequency() int {
+
+    var count, sum int64
+    for i := 0; i < len(c.Items)-1; i++ {
+        if c.Items[i].Unix == nil || c.Items[i+1].Unix == nil {
+            continue
+        }
+        sum += *c.Items[i].Unix - *c.Items[i+1].Unix
+        count++
+    }
+    // Avoid division by zero...
+    if count == 0 {
+        return minTimeout
+    }
+    return int(sum / count / 60)
+}
+
+func (c Channel) Timeout() int {
+
+    timeout := 0
+    if c.TTL != 0 {
+        timeout = c.TTL
+    } else {
+        timeout = c.Frequency() / 2
+    }
+
+    if timeout < minTimeout {
+        return minTimeout
+    } else if timeout > maxTimeout {
+        return maxTimeout
+    }
+
+    return timeout
+}

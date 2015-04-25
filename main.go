@@ -27,41 +27,6 @@ var (
 	formats = []string{time.RFC822, time.RFC822Z, time.RFC1123, time.RFC1123Z}
 )
 
-func (c Channel) Frequency() int {
-
-	var count, sum int64
-	for i := 0; i < len(c.Items)-1; i++ {
-		if c.Items[i].Unix == nil || c.Items[i+1].Unix == nil {
-			continue
-		}
-		sum += *c.Items[i].Unix - *c.Items[i+1].Unix
-		count++
-	}
-	// Avoid division by zero...
-	if count == 0 {
-		return minTimeout
-	}
-	return int(sum / count / 60)
-}
-
-func (c Channel) Timeout() int {
-
-	timeout := 0
-	if c.TTL != 0 {
-		timeout = c.TTL
-	} else {
-		timeout = c.Frequency() / 2
-	}
-
-	if timeout < minTimeout {
-		return minTimeout
-	} else if timeout > maxTimeout {
-		return maxTimeout
-	}
-
-	return timeout
-}
-
 func fetchChannel(url string) (*Channel, error) {
 
 	r, err := http.Get(url)
@@ -110,9 +75,7 @@ func fetchChannel(url string) (*Channel, error) {
 		item.Unix = &unix
 
 		// Sanitize text
-		fmt.Println(item.Title)
 		item.Title = sanitize.HTML(item.Title)
-		fmt.Println(item.Title)
 
 		c.Items[key] = item
 	}
@@ -192,6 +155,10 @@ func pollChannel(url string, db *gorm.DB) {
 	if err != nil {
 		db.Create(&Invalid{URL: url, Error: err.Error()})
 		log.Printf("Marked '%s' as invalid: %s", url, err)
+		dbChannel := Channel{URL: url}
+		if !db.Where(&dbChannel).First(&dbChannel).RecordNotFound() {
+			deleteChannel(&dbChannel, db)
+		}
 		return
 	}
 
