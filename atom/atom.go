@@ -8,19 +8,19 @@ import (
 )
 
 type Feed struct {
-	Title   string      `xml:"title"`
-	Updated string      `xml:"updated"`
+	Title   string  `xml:"title"`
+	Updated string  `xml:"updated"`
 	Entries []Entry `xml:"entry"`
-	Raw     []byte      `xml:",innerxml"`
+	Raw     []byte  `xml:",innerxml"`
 }
 
 type Entry struct {
-	Title     string     `xml:"title"`
-	Published string     `xml:"published"`
-	Updated   string     `xml:"updated"`
-	Summary   string     `xml:"summary"`
+	Title     string `xml:"title"`
+	Published string `xml:"published"`
+	Updated   string `xml:"updated"`
+	Summary   string `xml:"summary"`
 	Links     []Link `xml:"link"`
-	ID        string     `xml:"id"`
+	ID        string `xml:"id"`
 }
 
 type Link struct {
@@ -40,8 +40,8 @@ func NewFeed(data []byte) (*Feed, error) {
 		return nil, fmt.Errorf("Failed to decode feed: %s", err)
 	}
 	if len(f.Entries) == 0 {
-        return nil, fmt.Errorf("Feed has no entries")
-    }
+		return nil, fmt.Errorf("Feed has no entries")
+	}
 	return &f, nil
 }
 

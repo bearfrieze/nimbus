@@ -39,9 +39,9 @@ func NewFeed(data []byte) (*Feed, error) {
 	if err := decoder.Decode(&f); err != nil {
 		return nil, fmt.Errorf("Failed to decode feed: %s", err)
 	}
-    if len(f.Channel.Items) == 0 {
-        return nil, fmt.Errorf("Feed has no items")
-    }
+	if len(f.Channel.Items) == 0 {
+		return nil, fmt.Errorf("Feed has no items")
+	}
 	return &f, nil
 }
 
@@ -52,7 +52,7 @@ func IsFeed(data []byte) bool {
 	for {
 		token, _ := decoder.Token()
 		if se, ok := token.(xml.StartElement); ok {
-            // fmt.Printf("%+v\n\n", se)
+			// fmt.Printf("%+v\n\n", se)
 			return se.Name.Local == "rss"
 		}
 	}

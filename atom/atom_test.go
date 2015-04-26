@@ -3,8 +3,8 @@ package atom
 import (
 	"fmt"
 	"io/ioutil"
-	"testing"
 	"reflect"
+	"testing"
 )
 
 func TestSlashdot(t *testing.T) {
@@ -43,7 +43,7 @@ func TestTheVerge(t *testing.T) {
 					},
 				},
 				Published: "2015-04-26T02:01:02-04:00",
-				Updated: "2015-04-26T02:01:02-04:00",
+				Updated:   "2015-04-26T02:01:02-04:00",
 			},
 		},
 	}
@@ -119,7 +119,7 @@ func (tc TestCase) TestLink(t *testing.T) {
 
 // https://github.com/codegangsta/gin/blob/master/lib/helpers_test.go
 func expect(a interface{}, e interface{}, t *testing.T) {
-    if a != e {
-        t.Errorf("Expected %v (type %v) - Got %v (type %v)", e, reflect.TypeOf(e), a, reflect.TypeOf(a))
-    }
+	if a != e {
+		t.Errorf("Expected %v (type %v) - Got %v (type %v)", e, reflect.TypeOf(e), a, reflect.TypeOf(a))
+	}
 }
