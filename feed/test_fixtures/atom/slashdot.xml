@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" media="screen" href="/~d/styles/atom10full.xsl"?><?xml-stylesheet type="text/css" media="screen" href="http://rss.slashdot.org/~d/styles/itemcontent.css"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:syn="http://purl.org/rss/1.0/modules/syndication/" xml:lang="en-us">
+
+<title>Slashdot</title>
+<id>http://slashdot.org/</id>
+<link href="http://slashdot.org/" />
+
+
+<subtitle>News for nerds, stuff that matters</subtitle>
+<rights>Copyright 1997-2015, DHI Group Inc. All Rights Reserved. Slashdot is a DHI service</rights>
+<updated>2015-04-26T09:21:17+00:00</updated>
+<author>
+ <name>Dice</name>
+ <email>help@slashdot.org</email>
+</author>
+<category term="Technology" />
+<syn:updatePeriod>hourly</syn:updatePeriod>
+<syn:updateFrequency>1</syn:updateFrequency>
+<syn:updateBase>1970-01-01T00:00+00:00</syn:updateBase>
+<logo>http://a.fsdn.com/sd/topics/topicslashdot.gif</logo>
+
+<atom10:link xmlns:atom10="http://www.w3.org/2005/Atom" rel="self" type="application/atom+xml" href="http://rss.slashdot.org/slashdot/slashdotMainatom" /><feedburner:info xmlns:feedburner="http://rssnamespace.org/feedburner/ext/1.0" uri="slashdot/slashdotmainatom" /><atom10:link xmlns:atom10="http://www.w3.org/2005/Atom" rel="hub" href="http://pubsubhubbub.appspot.com/" /><entry>
+<id>http://news.slashdot.org/story/15/04/26/0347222/declassified-report-from-2009-questions-effectiveness-of-nsa-spying?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed</id>
+<title>Declassified Report From 2009 Questions Effectiveness of NSA Spying</title>
+<link href="http://news.slashdot.org/story/15/04/26/0347222/declassified-report-from-2009-questions-effectiveness-of-nsa-spying?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed" />
+<summary type="html">schwit1 writes: With debate gearing up over the coming expiration of the Patriot Act surveillance law, the Obama administration on Saturday unveiled a 6-year-old report examining the once-secret program code-named Stellarwind, which collected information on Americans' calls and emails. The report was from the inspectors general of various intelligence and law enforcement agencies.
+ 
+They found that while many senior intelligence officials believe the program filled a gap by increasing access to international communications, others including FBI agents, CIA analysts and managers "had difficulty evaluating the precise contribution of the [the surveillance system] to counterterrorism efforts because it was most often viewed as one source among many available analytic and intelligence-gathering tools in these efforts." 
+"The report said that the secrecy surrounding the program made it less useful. Very few working-level C.I.A. analysts were told about it. ... Another part of the newly disclosed report provides an explanation for a change in F.B.I. rules during the Bush administration. Previously, F.B.I. agents had only two types of cases: "preliminary" and "full" investigations. But the Bush administration created a third, lower-level type called an "assessment." This development, it turns out, was a result of Stellarwind.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Declassified+Report+From+2009+Questions+Effectiveness+of+NSA+Spying%3A+http%3A%2F%2Fbit.ly%2F1A0XnxI"&gt;&lt;img src="http://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Fnews.slashdot.org%2Fstory%2F15%2F04%2F26%2F0347222%2Fdeclassified-report-from-2009-questions-effectiveness-of-nsa-spying%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="http://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+&lt;a class="nobg" href="http://plus.google.com/share?url=http://news.slashdot.org/story/15/04/26/0347222/declassified-report-from-2009-questions-effectiveness-of-nsa-spying?utm_source=slashdot&amp;amp;utm_medium=googleplus" onclick="javascript:window.open(this.href,'', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"&gt;&lt;img src="http://www.gstatic.com/images/icons/gplus-16.png" alt="Share on Google+"/&gt;&lt;/a&gt;                                                                                                                                                                              
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="http://news.slashdot.org/story/15/04/26/0347222/declassified-report-from-2009-questions-effectiveness-of-nsa-spying?utm_source=atom1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;</summary>
+<updated>2015-04-26T08:53:00+00:00</updated>
+<author>
+ <name>Soulskill</name>
+</author>
+<category term="usa" />
+<slash:department>moving-at-the-speed-of-government</slash:department>
+<slash:section>news</slash:section>
+<slash:comments>1</slash:comments>
+<slash:hit_parade>1,1,1,1,0,0,0</slash:hit_parade>
+</entry>
+
+<entry>
+<id>http://linux.slashdot.org/story/15/04/26/0322241/debian-8-jessie-released?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed</id>
+<title>Debian 8 Jessie Released</title>
+<link href="http://linux.slashdot.org/story/15/04/26/0322241/debian-8-jessie-released?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed" />
+<summary type="html">linuxscreenshot writes: After almost 24 months of constant development, the Debian project is proud to present its new stable version 8 (code name Jessie), which will be supported for the next five years thanks to the combined work of the Debian Security team and the Debian Long Term Support team. (Release notes.) Jessie ships with a new default init system, systemd. The systemd suite provides features such as faster boot times, cgroups for services, and the possibility of isolating part of the services. The sysvinit init system is still available in Jessie. Screenshots and a screencast are available.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Debian+8+Jessie+Released%3A+http%3A%2F%2Fbit.ly%2F1GupM46"&gt;&lt;img src="http://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Flinux.slashdot.org%2Fstory%2F15%2F04%2F26%2F0322241%2Fdebian-8-jessie-released%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="http://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+&lt;a class="nobg" href="http://plus.google.com/share?url=http://linux.slashdot.org/story/15/04/26/0322241/debian-8-jessie-released?utm_source=slashdot&amp;amp;utm_medium=googleplus" onclick="javascript:window.open(this.href,'', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"&gt;&lt;img src="http://www.gstatic.com/images/icons/gplus-16.png" alt="Share on Google+"/&gt;&lt;/a&gt;                                                                                                                                                                              
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="http://linux.slashdot.org/story/15/04/26/0322241/debian-8-jessie-released?utm_source=atom1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;</summary>
+<updated>2015-04-26T05:29:00+00:00</updated>
+<author>
+ <name>Soulskill</name>
+</author>
+<category term="debian" />
+<slash:department>onward-and-upward</slash:department>
+<slash:section>linux</slash:section>
+<slash:comments>79</slash:comments>
+<slash:hit_parade>79,78,41,31,3,3,0</slash:hit_parade>
+</entry>
+
+<entry>
+<id>http://entertainment.slashdot.org/story/15/04/25/2223204/random-generator-parodies-vapid-startup-websites?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed</id>
+<title>Random Generator Parodies Vapid Startup Websites</title>
+<link href="http://entertainment.slashdot.org/story/15/04/25/2223204/random-generator-parodies-vapid-startup-websites?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed" />
+<summary type="html">alphadogg writes: A pair of Georgia Tech computer science students have created a Random Startup Website Generator that spits out a different jargon-laden startup website every time you click on the URL. Mike Bradley and Tiffany Zhang's project "serves as a parody of startups that have websites full of vague praise and little information about their actual business, often because they have little to show in that regard."&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Random+Generator+Parodies+Vapid+Startup+Websites%3A+http%3A%2F%2Fbit.ly%2F1z1ga0G"&gt;&lt;img src="http://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Fentertainment.slashdot.org%2Fstory%2F15%2F04%2F25%2F2223204%2Frandom-generator-parodies-vapid-startup-websites%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="http://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+&lt;a class="nobg" href="http://plus.google.com/share?url=http://entertainment.slashdot.org/story/15/04/25/2223204/random-generator-parodies-vapid-startup-websites?utm_source=slashdot&amp;amp;utm_medium=googleplus" onclick="javascript:window.open(this.href,'', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"&gt;&lt;img src="http://www.gstatic.com/images/icons/gplus-16.png" alt="Share on Google+"/&gt;&lt;/a&gt;                                                                                                                                                                              
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="http://entertainment.slashdot.org/story/15/04/25/2223204/random-generator-parodies-vapid-startup-websites?utm_source=atom1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;</summary>
+<updated>2015-04-26T02:10:00+00:00</updated>
+<author>
+ <name>Soulskill</name>
+</author>
+<category term="humor" />
+<slash:department>leveraging-your-synergies</slash:department>
+<slash:section>entertainment</slash:section>
+<slash:comments>68</slash:comments>
+<slash:hit_parade>68,68,40,31,6,1,0</slash:hit_parade>
+</entry>
+
+<entry>
+<id>http://yro.slashdot.org/story/15/04/25/2219209/think-tanks-how-a-bill-gates-agenda-becomes-a-law?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed</id>
+<title>Think Tanks: How a Bill [Gates Agenda] Becomes a Law</title>
+<link href="http://yro.slashdot.org/story/15/04/25/2219209/think-tanks-how-a-bill-gates-agenda-becomes-a-law?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed" />
+<summary type="html">theodp writes: The NY Times' Eric Lipton was just awarded a 2015 Pulitzer Prize for investigative reporting that shed light on how foreign powers buy influence at think tanks. So, it probably bears mentioning that Microsoft's 'two-pronged' National Talent Strategy (PDF) to increase K-12 CS education and the number of H-1B visas &amp;mdash; which is on the verge of being codified into laws &amp;mdash; was hatched at an influential Microsoft and Gates Foundation-backed think tank mentioned in Lipton's reporting, the Brookings Institution. In 2012, the Center for Technology Innovation at Brookings hosted a forum on STEM education and immigration reforms, where fabricating a crisis was discussed as a strategy to succeed with Microsoft's agenda after earlier lobbying attempts by Bill Gates and Microsoft had failed. "So, Brad [Microsoft General Counsel Brad Smith]," asked the Brookings Institution's Darrell West at the event, "you're the only [one] who mentioned this topic of making the problem bigger. So, we galvanize action by really producing a crisis, I take it?" "Yeah," Smith replied (video). And, with the help of nonprofit organizations like Code.org and FWD.us that were founded shortly thereafter, a national K-12 CS and tech immigration crisis was indeed created.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Think+Tanks%3A+How+a+Bill+%5BGates+Agenda%5D+Becomes+a+Law%3A+http%3A%2F%2Fbit.ly%2F1Dxo3HG"&gt;&lt;img src="http://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Fyro.slashdot.org%2Fstory%2F15%2F04%2F25%2F2219209%2Fthink-tanks-how-a-bill-gates-agenda-becomes-a-law%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="http://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+&lt;a class="nobg" href="http://plus.google.com/share?url=http://yro.slashdot.org/story/15/04/25/2219209/think-tanks-how-a-bill-gates-agenda-becomes-a-law?utm_source=slashdot&amp;amp;utm_medium=googleplus" onclick="javascript:window.open(this.href,'', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"&gt;&lt;img src="http://www.gstatic.com/images/icons/gplus-16.png" alt="Share on Google+"/&gt;&lt;/a&gt;                                                                                                                                                                              
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="http://yro.slashdot.org/story/15/04/25/2219209/think-tanks-how-a-bill-gates-agenda-becomes-a-law?utm_source=atom1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;</summary>
+<updated>2015-04-26T00:04:00+00:00</updated>
+<author>
+ <name>Soulskill</name>
+</author>
+<category term="government" />
+<slash:department>daily-dose-of-cynicism</slash:department>
+<slash:section>yro</slash:section>
+<slash:comments>101</slash:comments>
+<slash:hit_parade>101,96,58,48,9,7,2</slash:hit_parade>
+</entry>
+
+<entry>
+<id>http://ask.slashdot.org/story/15/04/25/2141252/ask-slashdot-what-are-the-most-stable-smartphones-these-days?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed</id>
+<title>Ask Slashdot: What Are the Most Stable Smartphones These Days?</title>
+<link href="http://ask.slashdot.org/story/15/04/25/2141252/ask-slashdot-what-are-the-most-stable-smartphones-these-days?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed" />
+<summary type="html">janimal writes: The iPhone used to be the smartphone that "just works." Ever since the 4S days, this has been true less and less with each generation. My wife's iPhone 6 needs to be restarted several times per week for things like internet search or making calls to work. An older 5S I'm using also doesn't consistently stream to Apple TV, doesn't display song names correctly on Apple TV and third party peripherals. In short, as features increase, the iPhone's stability is decreasing. In your opinion, which smartphone brand these days is taking up the slack and delivering a fully featured smartphone that "just works"?&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Ask+Slashdot%3A+What+Are+the+Most+Stable+Smartphones+These+Days%3F%3A+http%3A%2F%2Fbit.ly%2F1IaGlUN"&gt;&lt;img src="http://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Fask.slashdot.org%2Fstory%2F15%2F04%2F25%2F2141252%2Fask-slashdot-what-are-the-most-stable-smartphones-these-days%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="http://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+&lt;a class="nobg" href="http://plus.google.com/share?url=http://ask.slashdot.org/story/15/04/25/2141252/ask-slashdot-what-are-the-most-stable-smartphones-these-days?utm_source=slashdot&amp;amp;utm_medium=googleplus" onclick="javascript:window.open(this.href,'', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"&gt;&lt;img src="http://www.gstatic.com/images/icons/gplus-16.png" alt="Share on Google+"/&gt;&lt;/a&gt;                                                                                                                                                                              
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="http://ask.slashdot.org/story/15/04/25/2141252/ask-slashdot-what-are-the-most-stable-smartphones-these-days?utm_source=atom1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;</summary>
+<updated>2015-04-25T22:58:00+00:00</updated>
+<author>
+ <name>Soulskill</name>
+</author>
+<category term="cellphones" />
+<slash:department>your-dad's-flip-phone-is-pretty-stable</slash:department>
+<slash:section>askslashdot</slash:section>
+<slash:comments>280</slash:comments>
+<slash:hit_parade>280,277,173,125,33,18,14</slash:hit_parade>
+</entry>
+
+<entry>
+<id>http://yro.slashdot.org/story/15/04/25/2135224/fcc-chairman-a-former-cable-lobbyist-who-helped-kill-the-comcast-merger?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed</id>
+<title>FCC Chairman: a Former Cable Lobbyist Who Helped Kill the Comcast Merger</title>
+<link href="http://yro.slashdot.org/story/15/04/25/2135224/fcc-chairman-a-former-cable-lobbyist-who-helped-kill-the-comcast-merger?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed" />
+<summary type="html">An anonymous reader writes: After Friday's news that the Comcast/TWC merger is dead, the Washington Post points out an interesting fact: FCC Chairman Tom Wheeler, who was instrumental in throwing up roadblocks for the deal, used to be a lobbyist for the cable and wireless industry. "Those who predicted Wheeler would favor industry interests 'misunderstood him from the beginning &amp;mdash; the notion that because he had represented various industries, he was suddenly in their pocket never made any sense,' said one industry lawyer, who spoke on the condition of anonymity because he represents clients before the FCC." The "revolving door" between government and industry is often blamed for many of the problems regulating corporations. We were worried about it ourselves when Wheeler was nominated for his current job. I guess this goes to show that it depends more on the person than on their previous job.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=FCC+Chairman%3A+a+Former+Cable+Lobbyist+Who+Helped+Kill+the+Comcast+Merger%3A+http%3A%2F%2Fbit.ly%2F1Dnu1tD"&gt;&lt;img src="http://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Fyro.slashdot.org%2Fstory%2F15%2F04%2F25%2F2135224%2Ffcc-chairman-a-former-cable-lobbyist-who-helped-kill-the-comcast-merger%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="http://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+&lt;a class="nobg" href="http://plus.google.com/share?url=http://yro.slashdot.org/story/15/04/25/2135224/fcc-chairman-a-former-cable-lobbyist-who-helped-kill-the-comcast-merger?utm_source=slashdot&amp;amp;utm_medium=googleplus" onclick="javascript:window.open(this.href,'', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"&gt;&lt;img src="http://www.gstatic.com/images/icons/gplus-16.png" alt="Share on Google+"/&gt;&lt;/a&gt;                                                                                                                                                                              
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="http://yro.slashdot.org/story/15/04/25/2135224/fcc-chairman-a-former-cable-lobbyist-who-helped-kill-the-comcast-merger?utm_source=atom1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;</summary>
+<updated>2015-04-25T21:51:00+00:00</updated>
+<author>
+ <name>Soulskill</name>
+</author>
+<category term="government" />
+<slash:department>judging-books-by-covers</slash:department>
+<slash:section>yro</slash:section>
+<slash:comments>62</slash:comments>
+<slash:hit_parade>62,56,36,33,14,7,4</slash:hit_parade>
+</entry>
+
+<entry>
+<id>http://hardware.slashdot.org/story/15/04/25/2023207/oculus-rift-2015-launch-unlikely-but-not-impossible?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed</id>
+<title>Oculus Rift: 2015 Launch Unlikely, But Not Impossible</title>
+<link href="http://hardware.slashdot.org/story/15/04/25/2023207/oculus-rift-2015-launch-unlikely-but-not-impossible?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed" />
+<summary type="html">An anonymous reader writes: Earlier this week during Facebook's 2015 Q1 earnings call, the company seemed to suggest that a 2015 Oculus Rift release date was unlikely. At least, that's what a report about the call from Gamasutra indicated, saying, "It doesn't sound like Oculus will ship the consumer version of its Oculus Rift VR headset this year, or at least not in very large quantities." However, an equity analyst has chimed in to say that the language used during the call shouldn't be interpreted colloquially, concluding that "...there is no information here that rules out Oculus shipping in 2015."&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Oculus+Rift%3A+2015+Launch+Unlikely%2C+But+Not+Impossible%3A+http%3A%2F%2Fbit.ly%2F1DL1Xkk"&gt;&lt;img src="http://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Fhardware.slashdot.org%2Fstory%2F15%2F04%2F25%2F2023207%2Foculus-rift-2015-launch-unlikely-but-not-impossible%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="http://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+&lt;a class="nobg" href="http://plus.google.com/share?url=http://hardware.slashdot.org/story/15/04/25/2023207/oculus-rift-2015-launch-unlikely-but-not-impossible?utm_source=slashdot&amp;amp;utm_medium=googleplus" onclick="javascript:window.open(this.href,'', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"&gt;&lt;img src="http://www.gstatic.com/images/icons/gplus-16.png" alt="Share on Google+"/&gt;&lt;/a&gt;                                                                                                                                                                              
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="http://hardware.slashdot.org/story/15/04/25/2023207/oculus-rift-2015-launch-unlikely-but-not-impossible?utm_source=atom1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;</summary>
+<updated>2015-04-25T20:50:00+00:00</updated>
+<author>
+ <name>Soulskill</name>
+</author>
+<category term="displays" />
+<slash:department>is-the-future-here-yet</slash:department>
+<slash:section>hardware</slash:section>
+<slash:comments>48</slash:comments>
+<slash:hit_parade>48,46,18,15,3,0,0</slash:hit_parade>
+</entry>
+
+<entry>
+<id>http://science.slashdot.org/story/15/04/25/1941243/liquid-mercury-found-under-mexican-pyramid?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed</id>
+<title>Liquid Mercury Found Under Mexican Pyramid</title>
+<link href="http://science.slashdot.org/story/15/04/25/1941243/liquid-mercury-found-under-mexican-pyramid?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed" />
+<summary type="html">An anonymous reader writes: An archaeologist has discovered liquid mercury at the end of a tunnel beneath a Mexican pyramid, a finding that could suggest the existence of a king's tomb or a ritual chamber far below one of the most ancient cities of the Americas. Mexican researcher Sergio G&amp;#243;mez ... has spent six years slowly excavating the tunnel, which was unsealed in 2003 after 1,800 years. Last November, G&amp;#243;mez and a team announced they had found three chambers at the tunnel&amp;rsquo;s 300ft end, almost 60ft below the the temple. Near the entrance of the chambers, they a found trove of strange artifacts: jade statues, jaguar remains, a box filled with carved shells and rubber balls.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Liquid+Mercury+Found+Under+Mexican+Pyramid%3A+http%3A%2F%2Fbit.ly%2F1OpHFrQ"&gt;&lt;img src="http://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Fscience.slashdot.org%2Fstory%2F15%2F04%2F25%2F1941243%2Fliquid-mercury-found-under-mexican-pyramid%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="http://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+&lt;a class="nobg" href="http://plus.google.com/share?url=http://science.slashdot.org/story/15/04/25/1941243/liquid-mercury-found-under-mexican-pyramid?utm_source=slashdot&amp;amp;utm_medium=googleplus" onclick="javascript:window.open(this.href,'', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"&gt;&lt;img src="http://www.gstatic.com/images/icons/gplus-16.png" alt="Share on Google+"/&gt;&lt;/a&gt;                                                                                                                                                                              
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="http://science.slashdot.org/story/15/04/25/1941243/liquid-mercury-found-under-mexican-pyramid?utm_source=atom1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;</summary>
+<updated>2015-04-25T19:48:00+00:00</updated>
+<author>
+ <name>Soulskill</name>
+</author>
+<category term="science" />
+<slash:department>where-else-would-you-hide-it</slash:department>
+<slash:section>science</slash:section>
+<slash:comments>77</slash:comments>
+<slash:hit_parade>77,76,47,43,17,10,6</slash:hit_parade>
+</entry>
+
+<entry>
+<id>http://yro.slashdot.org/story/15/04/25/1612220/vizio-destroyer-of-patent-trolls?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed</id>
+<title>Vizio, Destroyer of Patent Trolls</title>
+<link href="http://yro.slashdot.org/story/15/04/25/1612220/vizio-destroyer-of-patent-trolls?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed" />
+<summary type="html">An anonymous reader writes: We read about a lot of patent troll cases. Some are successful and some are not, but many such cases are decided before ever going to court. It's how the patent troll operates &amp;mdash; they know exactly how high litigation costs are. Even without a legal leg to stand on, they can ask for settlements that make better financial sense for the target to accept, rather than dumping just as much money into attorney's fees for an uncertain outcome. Fortunately, some companies fight back. TV-maker Vizio is one of these, and they've successfully defended against 16 different patent trolls, some with multiple claims. In addition, they're going on the offensive, trying to wrest legal fees from the plaintiffs for their spurious claims. "For the first time, it stands a real chance, in a case where it spent more than $1 million to win. Two recent Supreme Court decisions make it easier for victorious defendants to collect fees in patent cases. The TV maker is up against a storied patent plaintiffs' firm, Chicago-based Niro, Haller &amp;amp; Niro, that has fought for Oplus tooth and nail. ... For Vizio, the company feels that it's on the verge of getting vindication for a long-standing policy of not backing down to patent trolls."&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Vizio%2C+Destroyer+of+Patent+Trolls%3A+http%3A%2F%2Fbit.ly%2F1GuSrc6"&gt;&lt;img src="http://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Fyro.slashdot.org%2Fstory%2F15%2F04%2F25%2F1612220%2Fvizio-destroyer-of-patent-trolls%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="http://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+&lt;a class="nobg" href="http://plus.google.com/share?url=http://yro.slashdot.org/story/15/04/25/1612220/vizio-destroyer-of-patent-trolls?utm_source=slashdot&amp;amp;utm_medium=googleplus" onclick="javascript:window.open(this.href,'', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"&gt;&lt;img src="http://www.gstatic.com/images/icons/gplus-16.png" alt="Share on Google+"/&gt;&lt;/a&gt;                                                                                                                                                                              
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="http://yro.slashdot.org/story/15/04/25/1612220/vizio-destroyer-of-patent-trolls?utm_source=atom1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;</summary>
+<updated>2015-04-25T18:44:00+00:00</updated>
+<author>
+ <name>Soulskill</name>
+</author>
+<category term="patents" />
+<slash:department>best-defense-is-a-strong-offense</slash:department>
+<slash:section>yro</slash:section>
+<slash:comments>73</slash:comments>
+<slash:hit_parade>73,70,51,41,16,11,7</slash:hit_parade>
+</entry>
+
+<entry>
+<id>http://yro.slashdot.org/story/15/04/25/1423230/a-guide-to-the-5-cybersecurity-bills-now-before-congress?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed</id>
+<title>A Guide To the 5 Cybersecurity Bills Now Before Congress</title>
+<link href="http://yro.slashdot.org/story/15/04/25/1423230/a-guide-to-the-5-cybersecurity-bills-now-before-congress?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed" />
+<summary type="html">blottsie writes: At press time, the House had passed two cybersecurity bills, one Senate bill had been passed out of committee and reported to the full chamber for a final vote, and a third House bill and a second Senate bill were awaiting review by the appropriate committee. The two House bills that passed earlier this week will be combined and sent to the Senate, but the Senate won't take up them up directly; instead, it will vote on its own two bills. It's complicated, so here's a quick breakdown of the key details.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=A+Guide+To+the+5+Cybersecurity+Bills+Now+Before+Congress%3A+http%3A%2F%2Fbit.ly%2F1KgC5SQ"&gt;&lt;img src="http://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Fyro.slashdot.org%2Fstory%2F15%2F04%2F25%2F1423230%2Fa-guide-to-the-5-cybersecurity-bills-now-before-congress%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="http://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+&lt;a class="nobg" href="http://plus.google.com/share?url=http://yro.slashdot.org/story/15/04/25/1423230/a-guide-to-the-5-cybersecurity-bills-now-before-congress?utm_source=slashdot&amp;amp;utm_medium=googleplus" onclick="javascript:window.open(this.href,'', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"&gt;&lt;img src="http://www.gstatic.com/images/icons/gplus-16.png" alt="Share on Google+"/&gt;&lt;/a&gt;                                                                                                                                                                              
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="http://yro.slashdot.org/story/15/04/25/1423230/a-guide-to-the-5-cybersecurity-bills-now-before-congress?utm_source=atom1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;</summary>
+<updated>2015-04-25T17:41:00+00:00</updated>
+<author>
+ <name>Soulskill</name>
+</author>
+<category term="government" />
+<slash:department>better-know-a-bill</slash:department>
+<slash:section>yro</slash:section>
+<slash:comments>14</slash:comments>
+<slash:hit_parade>14,13,7,6,4,3,1</slash:hit_parade>
+</entry>
+
+<entry>
+<id>http://tech.slashdot.org/story/15/04/25/146230/giant-survival-ball-will-help-explorer-survive-a-year-on-an-iceberg?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed</id>
+<title>Giant Survival Ball Will Help Explorer Survive a Year On an Iceberg</title>
+<link href="http://tech.slashdot.org/story/15/04/25/146230/giant-survival-ball-will-help-explorer-survive-a-year-on-an-iceberg?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed" />
+<summary type="html">HughPickens.com writes: Ben Yeager reports in Outside Magazine that Italian explorer Alex Bellini plans to travel to Greenland's west coast, pick an iceberg, and live on it for a year as it melts out in the Atlantic. It's a precarious idea. Bellini will be completely isolated, and his adopted dwelling is liable to roll or fall apart at any moment, thrusting him into the icy sea or crushing him under hundreds of tons of ice. His solution: an indestructible survival capsule built by an aeronautics company that specializes in tsunami-proof escape pods. "I knew since the beginning I needed to minimize the risk. An iceberg can flip over, and those events can be catastrophic." Bellini plans to use a lightweight, indestructible floating capsules, or "personal safety systems" made from aircraft-grade aluminum in what's called a continuous monocoque structure, an interlocking frame of aluminum spars that evenly distribute force, underneath a brightly painted and highly visible aluminum shell. The inner frame can be stationary or mounted on roller balls so it rotates, allowing the passengers to remain upright at all times. 
+
+Aeronautical engineer Julian Sharpe, founder of Survival Capsule, got the idea for his capsules after the 2004 Indonesian tsunami. He believes fewer people would have died had some sort of escape pod existed. Sharpe hopes the products will be universal&amp;mdash;in schools, retirement homes, and private residences, anywhere there is severe weather. The product appeals to Bellini because it's strong enough to survive a storm at sea or getting crushed between two icebergs. Bellini will spend almost all of his time in the capsule with the hatch closed, which will pose major challenges because he'll have to stay active without venturing out onto a slippery, unstable iceberg. If it flips, he'll have no time to react. "Any step away from [the iceberg] will be in unknown territory," says Bellini. "You want to stretch your body. But then you risk your life."&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Giant+Survival+Ball+Will+Help+Explorer+Survive+a+Year+On+an+Iceberg%3A+http%3A%2F%2Fbit.ly%2F1I9dr7z"&gt;&lt;img src="http://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Ftech.slashdot.org%2Fstory%2F15%2F04%2F25%2F146230%2Fgiant-survival-ball-will-help-explorer-survive-a-year-on-an-iceberg%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="http://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+&lt;a class="nobg" href="http://plus.google.com/share?url=http://tech.slashdot.org/story/15/04/25/146230/giant-survival-ball-will-help-explorer-survive-a-year-on-an-iceberg?utm_source=slashdot&amp;amp;utm_medium=googleplus" onclick="javascript:window.open(this.href,'', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"&gt;&lt;img src="http://www.gstatic.com/images/icons/gplus-16.png" alt="Share on Google+"/&gt;&lt;/a&gt;                                                                                                                                                                              
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="http://tech.slashdot.org/story/15/04/25/146230/giant-survival-ball-will-help-explorer-survive-a-year-on-an-iceberg?utm_source=atom1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;</summary>
+<updated>2015-04-25T16:40:00+00:00</updated>
+<author>
+ <name>Soulskill</name>
+</author>
+<category term="earth" />
+<slash:department>rolling-the-seven-seas</slash:department>
+<slash:section>technology</slash:section>
+<slash:comments>99</slash:comments>
+<slash:hit_parade>99,97,63,56,18,11,7</slash:hit_parade>
+</entry>
+
+<entry>
+<id>http://mobile.slashdot.org/story/15/04/25/140242/turning-a-smartphone-display-into-a-biometric-scanner?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed</id>
+<title>Turning a Smartphone Display Into a Biometric Scanner</title>
+<link href="http://mobile.slashdot.org/story/15/04/25/140242/turning-a-smartphone-display-into-a-biometric-scanner?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed" />
+<summary type="html">New submitter jan_jes writes: Recent mobile phones integrate fingerprint scanners to authenticate users biometrically and replace passwords, making authentication more convenient. Researchers at Yahoo Labs have created a new technology called "Bodyprint," which turns your smartphone's touchscreen display into a biometric scanner. It allows the touch sensor to scan users' body parts (PDF) such as ears, fingers, fists, and palms by pressing them against the display. Bodyprint implements the four-eye principle for locking sensitive documents &amp;mdash; accessing the document can require the presence of two or more people involved with the project. Another application is authenticating a user to answer a call by scanning their ear pressed against the phone.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Turning+a+Smartphone+Display+Into+a+Biometric+Scanner%3A+http%3A%2F%2Fbit.ly%2F1bEddcr"&gt;&lt;img src="http://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Fmobile.slashdot.org%2Fstory%2F15%2F04%2F25%2F140242%2Fturning-a-smartphone-display-into-a-biometric-scanner%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="http://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+&lt;a class="nobg" href="http://plus.google.com/share?url=http://mobile.slashdot.org/story/15/04/25/140242/turning-a-smartphone-display-into-a-biometric-scanner?utm_source=slashdot&amp;amp;utm_medium=googleplus" onclick="javascript:window.open(this.href,'', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"&gt;&lt;img src="http://www.gstatic.com/images/icons/gplus-16.png" alt="Share on Google+"/&gt;&lt;/a&gt;                                                                                                                                                                              
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="http://mobile.slashdot.org/story/15/04/25/140242/turning-a-smartphone-display-into-a-biometric-scanner?utm_source=atom1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;</summary>
+<updated>2015-04-25T15:36:00+00:00</updated>
+<author>
+ <name>Soulskill</name>
+</author>
+<category term="cellphones" />
+<slash:department>don't-make-the-obvious-jokes</slash:department>
+<slash:section>mobile</slash:section>
+<slash:comments>12</slash:comments>
+<slash:hit_parade>12,12,7,5,2,0,0</slash:hit_parade>
+</entry>
+
+<entry>
+<id>http://yro.slashdot.org/story/15/04/25/1253222/microsoft-increases-android-patent-licensing-reach?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed</id>
+<title>Microsoft Increases Android Patent Licensing Reach</title>
+<link href="http://yro.slashdot.org/story/15/04/25/1253222/microsoft-increases-android-patent-licensing-reach?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed" />
+<summary type="html">BrianFagioli writes: Microsoft may not be winning in the mobile arena, but they're still making tons of money from those who are. Patent licensing agreements net the company billions each year from device makers like Samsung, Foxconn, and ZTE. Now, Microsoft has added another company to that list: Qisda Corp. They make a number of Android and Chrome-based devices under the Qisda brand and the BenQ brand, and now Microsoft will be making money off those, too.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Microsoft+Increases+Android+Patent+Licensing+Reach%3A+http%3A%2F%2Fbit.ly%2F1z4jicq"&gt;&lt;img src="http://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Fyro.slashdot.org%2Fstory%2F15%2F04%2F25%2F1253222%2Fmicrosoft-increases-android-patent-licensing-reach%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="http://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+&lt;a class="nobg" href="http://plus.google.com/share?url=http://yro.slashdot.org/story/15/04/25/1253222/microsoft-increases-android-patent-licensing-reach?utm_source=slashdot&amp;amp;utm_medium=googleplus" onclick="javascript:window.open(this.href,'', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"&gt;&lt;img src="http://www.gstatic.com/images/icons/gplus-16.png" alt="Share on Google+"/&gt;&lt;/a&gt;                                                                                                                                                                              
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="http://yro.slashdot.org/story/15/04/25/1253222/microsoft-increases-android-patent-licensing-reach?utm_source=atom1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;</summary>
+<updated>2015-04-25T14:29:00+00:00</updated>
+<author>
+ <name>Soulskill</name>
+</author>
+<category term="patents" />
+<slash:department>if-you-can't-beat-'em,-bleed-'em</slash:department>
+<slash:section>yro</slash:section>
+<slash:comments>97</slash:comments>
+<slash:hit_parade>97,93,54,42,9,8,6</slash:hit_parade>
+</entry>
+
+<entry>
+<id>http://news.slashdot.org/story/15/04/25/1246230/78-earthquake-rocks-nepal-hundreds-dead?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed</id>
+<title>7.8 Earthquake Rocks Nepal, Hundreds Dead</title>
+<link href="http://news.slashdot.org/story/15/04/25/1246230/78-earthquake-rocks-nepal-hundreds-dead?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed" />
+<summary type="html">An anonymous reader writes: Nepal was struck by an earthquake of magnitude 7.8 today, with an epicenter 80 km east of the country's second biggest city, Pokhara. Its effects were also strongly felt in the capital, Kathmandu. Casualty reports conflict, but authorities have indicated at least 500 are dead and many more are feared to be trapped. Nepal has declared a state of emergency for the affected areas, and asked for international humanitarian assistance. India and Pakistan have both offered help. Some Indian cities were affected by the earthquake as well, and there are reports of avalanches on Mt. Everest, which has many climbers at any given time.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=7.8+Earthquake+Rocks+Nepal%2C+Hundreds+Dead%3A+http%3A%2F%2Fbit.ly%2F1brdMW1"&gt;&lt;img src="http://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Fnews.slashdot.org%2Fstory%2F15%2F04%2F25%2F1246230%2F78-earthquake-rocks-nepal-hundreds-dead%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="http://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+&lt;a class="nobg" href="http://plus.google.com/share?url=http://news.slashdot.org/story/15/04/25/1246230/78-earthquake-rocks-nepal-hundreds-dead?utm_source=slashdot&amp;amp;utm_medium=googleplus" onclick="javascript:window.open(this.href,'', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"&gt;&lt;img src="http://www.gstatic.com/images/icons/gplus-16.png" alt="Share on Google+"/&gt;&lt;/a&gt;                                                                                                                                                                              
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="http://news.slashdot.org/story/15/04/25/1246230/78-earthquake-rocks-nepal-hundreds-dead?utm_source=atom1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;</summary>
+<updated>2015-04-25T13:25:00+00:00</updated>
+<author>
+ <name>Soulskill</name>
+</author>
+<category term="earth" />
+<slash:department>rest-in-peace</slash:department>
+<slash:section>news</slash:section>
+<slash:comments>101</slash:comments>
+<slash:hit_parade>101,94,45,38,10,8,6</slash:hit_parade>
+</entry>
+
+<entry>
+<id>http://hardware.slashdot.org/story/15/04/25/112224/tesla-to-announce-battery-based-energy-storage-for-homes?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed</id>
+<title>Tesla To Announce Battery-Based Energy Storage For Homes</title>
+<link href="http://hardware.slashdot.org/story/15/04/25/112224/tesla-to-announce-battery-based-energy-storage-for-homes?utm_source=atom1.0mainlinkanon&amp;utm_medium=feed" />
+<summary type="html">Okian Warrior writes: Billionaire Elon Musk will announce next week that Tesla will begin offering battery-based energy storage for residential and commercial customers. The batteries power up overnight when energy companies typically charge less for electricity, then are used during the day to power a home. In a pilot project, Tesla has already begun offering home batteries to SolarCity (SCTY) customers, a solar power company for which Musk serves as chairman. Currently 330 U.S. households are running on Tesla's batteries in California. The batteries start at about $13,000, though California's Pacific Gas and Electric Co. (PCG) offers customers a 50% rebate. The batteries are three-feet high by 2.5-feet wide, and need to be installed at least a foot and a half off the ground. They can be controlled with a Web app and a smartphone app.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Tesla+To+Announce+Battery-Based+Energy+Storage+For+Homes%3A+http%3A%2F%2Fbit.ly%2F1JolaA3"&gt;&lt;img src="http://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Fhardware.slashdot.org%2Fstory%2F15%2F04%2F25%2F112224%2Ftesla-to-announce-battery-based-energy-storage-for-homes%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="http://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+&lt;a class="nobg" href="http://plus.google.com/share?url=http://hardware.slashdot.org/story/15/04/25/112224/tesla-to-announce-battery-based-energy-storage-for-homes?utm_source=slashdot&amp;amp;utm_medium=googleplus" onclick="javascript:window.open(this.href,'', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"&gt;&lt;img src="http://www.gstatic.com/images/icons/gplus-16.png" alt="Share on Google+"/&gt;&lt;/a&gt;                                                                                                                                                                              
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="http://hardware.slashdot.org/story/15/04/25/112224/tesla-to-announce-battery-based-energy-storage-for-homes?utm_source=atom1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;</summary>
+<updated>2015-04-25T12:23:00+00:00</updated>
+<author>
+ <name>timothy</name>
+</author>
+<category term="power" />
+<slash:department>but-in-the-meantime-here's-this-preemptive-announcement</slash:department>
+<slash:section>hardware</slash:section>
+<slash:comments>260</slash:comments>
+<slash:hit_parade>260,256,188,164,35,15,5</slash:hit_parade>
+</entry>
+
+</feed>

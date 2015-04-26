@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>xkcd.com</title>
+    <link href="http://xkcd.com/" rel="alternate" />
+    <id>http://xkcd.com/</id>
+    <updated>2015-04-24T00:00:00Z</updated>
+    <entry>
+        <title>Win by Induction</title>
+        <link href="http://xkcd.com/1516/" rel="alternate" />
+        <updated>2015-04-24T00:00:00Z</updated>
+        <id>http://xkcd.com/1516/</id>
+        <summary type="html">&lt;img src="http://imgs.xkcd.com/comics/win_by_induction.png" title="This would be bad enough, but every 30th or 40th pokéball has TWO of them inside." alt="This would be bad enough, but every 30th or 40th pokéball has TWO of them inside." /&gt;</summary>
+    </entry>
+    <entry>
+        <title>Basketball Earth</title>
+        <link href="http://xkcd.com/1515/" rel="alternate" />
+        <updated>2015-04-22T00:00:00Z</updated>
+        <id>http://xkcd.com/1515/</id>
+        <summary type="html">&lt;img src="http://imgs.xkcd.com/comics/basketball_earth.png" title="How many points do you get for dunking every basketball in existence at once?" alt="How many points do you get for dunking every basketball in existence at once?" /&gt;</summary>
+    </entry>
+    <entry>
+        <title>PermaCal</title>
+        <link href="http://xkcd.com/1514/" rel="alternate" />
+        <updated>2015-04-20T00:00:00Z</updated>
+        <id>http://xkcd.com/1514/</id>
+        <summary type="html">&lt;img src="http://imgs.xkcd.com/comics/permacal.png" title="The flood of PermaCalNTP leap-second notifications was bad enough, but when people started asking for millisecond resolution, the resulting DDOS brought down the internet." alt="The flood of PermaCalNTP leap-second notifications was bad enough, but when people started asking for millisecond resolution, the resulting DDOS brought down the internet." /&gt;</summary>
+    </entry>
+    <entry>
+        <title>Code Quality</title>
+        <link href="http://xkcd.com/1513/" rel="alternate" />
+        <updated>2015-04-17T00:00:00Z</updated>
+        <id>http://xkcd.com/1513/</id>
+        <summary type="html">&lt;img src="http://imgs.xkcd.com/comics/code_quality.png" title="I honestly didn't think you could even USE emoji in variable names. Or that there were so many different crying ones." alt="I honestly didn't think you could even USE emoji in variable names. Or that there were so many different crying ones." /&gt;</summary>
+    </entry>
+</feed>
