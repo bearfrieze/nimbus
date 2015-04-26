@@ -47,10 +47,14 @@ type Item struct {
 
 func (f Feed) Timeout() time.Duration {
 
+	var timeout time.Duration
+
 	count := len(f.Items) - 1
-	delta := f.Items[0].PublishedAt.Sub(f.Items[count].PublishedAt)
-	frequency := time.Duration(delta / time.Duration(count))
-	timeout := frequency / time.Duration(2)
+	if count > 0 {
+		delta := f.Items[0].PublishedAt.Sub(f.Items[count].PublishedAt)
+		frequency := time.Duration(delta / time.Duration(count))
+		timeout = frequency / time.Duration(2)
+	}
 
 	if timeout < minTimeout {
 		return minTimeout
@@ -72,7 +76,7 @@ func NewFeed(url string, data []byte) (*Feed, error) {
 		f = NewFeedFromAtom(af)
 	}
 	if f == nil {
-		return nil, fmt.Errorf("Feed is not RSS: %s\nFeed is not Atom: %s\n", re, ae)
+		return nil, fmt.Errorf("Feed is not RSS: %s, Feed is not Atom: %s", re, ae)
 	}
 	for key, item := range f.Items {
 		item.Title = sanitize.HTML(item.Title)
@@ -83,7 +87,6 @@ func NewFeed(url string, data []byte) (*Feed, error) {
 				md5.Sum([]byte(item.Title)),
 				item.PublishedAt.Unix(),
 			)
-			fmt.Println(item.GUID)
 		}
 		f.Items[key] = item
 		f.UpdatedAt = time.Now()
@@ -119,9 +122,13 @@ func NewFeedFromAtom(af *atom.Feed) *Feed {
 
 	items := make([]Item, len(af.Entries))
 	for key, entry := range af.Entries {
+		var url string
+		if len(entry.Links) > 0 {
+			url = entry.Links[0].Href
+		}
 		items[key] = Item{
 			Title:       entry.Title,
-			URL:         entry.Links[0].Href,
+			URL:         url,
 			GUID:        entry.ID,
 			PublishedAt: PublishedAt([]string{entry.Published, entry.Updated}),
 		}
