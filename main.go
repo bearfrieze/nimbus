@@ -19,20 +19,6 @@ const (
 	pollFrequency = 15
 )
 
-type Alias struct {
-    ID        int
-    Alias     string `sql:"unique_index"`
-    Original  string `sql:"index"`
-    CreatedAt time.Time
-}
-
-type Invalid struct {
-    ID        int
-    URL       string `sql:"unique_index"`
-    Error     string
-    CreatedAt time.Time
-}
-
 func fetchFeed(url string) (*nimbus.Feed, error) {
 
 	r, err := http.Get(url)
@@ -91,7 +77,7 @@ func createAlias(alias *nimbus.Feed, original *nimbus.Feed, delete bool, db *gor
 		return
 	}
 	log.Printf("Creating alias '%s' for '%s'\n", alias.URL, original.URL)
-	db.Create(&Alias{Alias: alias.URL, Original: original.URL})
+	db.Create(&nimbus.Alias{Alias: alias.URL, Original: original.URL})
 
 	if delete {
 		deleteFeed(alias, db)
@@ -101,7 +87,7 @@ func createAlias(alias *nimbus.Feed, original *nimbus.Feed, delete bool, db *gor
 func deleteFeed(feed *nimbus.Feed, db *gorm.DB) {
 
 	log.Printf("Deleting feed '%s'\n", feed.URL)
-	db.Where(&Alias{Original: feed.URL}).Delete(Alias{})
+	db.Where(&nimbus.Alias{Original: feed.URL}).Delete(nimbus.Alias{})
 	db.Where(&nimbus.Item{FeedID: feed.ID}).Delete(nimbus.Item{})
 	db.Delete(feed)
 }
@@ -110,7 +96,7 @@ func pollFeed(url string, db *gorm.DB) {
 
 	feed, err := fetchFeed(url)
 	if err != nil {
-		db.Create(&Invalid{URL: url, Error: err.Error()})
+		db.Create(&nimbus.Invalid{URL: url, Error: err.Error()})
 		log.Printf("Marked '%s' as invalid: %s", url, err)
 		dbFeed := nimbus.Feed{URL: url}
 		if !db.Where(&dbFeed).First(&dbFeed).RecordNotFound() {
@@ -143,11 +129,11 @@ func getFeed(url string, db *gorm.DB, repeat bool) (*nimbus.Feed, bool) {
 
 	feed := nimbus.Feed{URL: url}
 	if db.Where(&feed).First(&feed).RecordNotFound() {
-		alias := Alias{Alias: url}
+		alias := nimbus.Alias{Alias: url}
 		if !repeat && !db.Where(&alias).First(&alias).RecordNotFound() {
 			return getFeed(alias.Original, db, true)
 		}
-		invalid := Invalid{URL: url}
+		invalid := nimbus.Invalid{URL: url}
 		if !db.Where(&invalid).First(&invalid).RecordNotFound() {
 			return nil, false
 		}
@@ -191,13 +177,13 @@ func getDB() *gorm.DB {
 	if err != nil {
 		log.Fatalf("%s\n", err)
 	}
-	
+
 	db.DB()
 	db.DB().Ping()
 	db.DB().SetMaxIdleConns(10)
 	db.DB().SetMaxOpenConns(100)
 	db.SingularTable(true)
-	db.AutoMigrate(&nimbus.Feed{}, &nimbus.Item{}, &Alias{}, &Invalid{})
+	db.AutoMigrate(&nimbus.Feed{}, &nimbus.Item{}, &nimbus.Alias{}, &nimbus.Invalid{})
 	return &db
 }
 
