@@ -1,4 +1,4 @@
-package feed
+package nimbus
 
 import (
 	"crypto/md5"
@@ -36,7 +36,7 @@ type Feed struct {
 
 type Item struct {
 	ID          int       `json:"-"`
-	ChannelID   int       `json:"-" sql:"index"`
+	FeedID      int       `json:"-" sql:"index"`
 	Title       string    `json:"title"`
 	URL         string    `json:"url"`
 	GUID        string    `json:"guid" sql:"index"`
@@ -86,6 +86,7 @@ func NewFeed(url string, data []byte) (*Feed, error) {
 			fmt.Println(item.GUID)
 		}
 		f.Items[key] = item
+		f.UpdatedAt = time.Now()
 	}
 	f.URL = url
 	f.NextPollAt = time.Now().Add(f.Timeout())
