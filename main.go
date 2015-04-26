@@ -1,15 +1,11 @@
 package main
 
 import (
-	"bytes"
-	"crypto/sha256"
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
+	"github.com/bearfrieze/nimbus/nimbus"
 	"github.com/jinzhu/gorm"
-	"github.com/kennygrant/sanitize"
 	_ "github.com/lib/pq"
-	"golang.org/x/net/html/charset"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -23,182 +19,144 @@ const (
 	pollFrequency = 15
 )
 
-var (
-	formats = []string{time.RFC822, time.RFC822Z, time.RFC1123, time.RFC1123Z}
-)
+type Alias struct {
+    ID        int
+    Alias     string `sql:"unique_index"`
+    Original  string `sql:"index"`
+    CreatedAt time.Time
+}
 
-func fetchChannel(url string) (*Channel, error) {
+type Invalid struct {
+    ID        int
+    URL       string `sql:"unique_index"`
+    Error     string
+    CreatedAt time.Time
+}
+
+func fetchFeed(url string) (*nimbus.Feed, error) {
 
 	r, err := http.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load channel '%s': %s", url, err)
+		return nil, fmt.Errorf("Failed to load feed '%s': %s", url, err)
 	}
 	data, _ := ioutil.ReadAll(r.Body)
-
-	decoder := xml.NewDecoder(bytes.NewReader(data))
-	decoder.CharsetReader = charset.NewReaderLabel
-	var f Feed
-	if err := decoder.Decode(&f); err != nil {
-		return nil, fmt.Errorf("Failed to decode channel '%s': %s", url, err)
-	}
-
-	c := f.Channel
-	if c.Title == "" || len(c.Items) <= 0 {
-		return nil, fmt.Errorf("Invalid channel '%s'", url)
-	}
-
-	for key, item := range c.Items {
-
-		// Add GUIDs if missing
-		if item.GUID == nil {
-			guid := fmt.Sprintf("%s:%s:%s", url, item.PubDate, item.Title)
-			item.GUID = &guid
-		}
-
-		// Enrich publication dates
-		if item.PubDate == "" {
-			item.PubDate = time.Now().Format(time.RFC1123Z)
-		}
-
-		// Add unix timestamps
-		var t time.Time
-		for _, format := range formats {
-			t, err = time.Parse(format, item.PubDate)
-			if err == nil {
-				break
-			}
-		}
-		if err != nil {
-			log.Printf("Failed to parse time for channel '%s': %s\n", url, err)
-		}
-		unix := t.Unix()
-		item.Unix = &unix
-
-		// Sanitize text
-		item.Title = sanitize.HTML(item.Title)
-
-		c.Items[key] = item
-	}
-
-	c.URL = url
-	c.Sum = fmt.Sprintf("%x", sha256.Sum256(data))
-	c.PollAt = time.Now().Add(time.Duration(c.Timeout()) * time.Minute)
-
-	return &c, nil
+	return nimbus.NewFeed(url, data)
 }
 
-func saveChannel(channel *Channel, db *gorm.DB) error {
+func saveFeed(feed *nimbus.Feed, db *gorm.DB) error {
 
-	dbChannel := Channel{URL: channel.URL}
-	dbDuplicate := Channel{Sum: channel.Sum}
-	dbChannelFound := !db.Where(&dbChannel).First(&dbChannel).RecordNotFound()
+	dbFeed := nimbus.Feed{URL: feed.URL}
+	dbDuplicate := nimbus.Feed{Sum: feed.Sum}
+	dbFeedFound := !db.Where(&dbFeed).First(&dbFeed).RecordNotFound()
 	dbDuplicateFound := !db.Where(&dbDuplicate).First(&dbDuplicate).RecordNotFound()
 
-	if dbDuplicateFound && !(dbChannelFound && dbChannel.ID == dbDuplicate.ID) {
-		createAlias(&dbChannel, &dbDuplicate, dbChannelFound, db)
-		return fmt.Errorf("Duplicate channel '%s' found, alias created", dbDuplicate.URL)
+	if dbDuplicateFound && !(dbFeedFound && dbFeed.ID == dbDuplicate.ID) {
+		createAlias(&dbFeed, &dbDuplicate, dbFeedFound, db)
+		return fmt.Errorf("Duplicate feed '%s' found, alias created", dbDuplicate.URL)
 	}
 
-	if !dbChannelFound {
-		log.Printf("Creating channel '%s'\n", channel.URL)
-		db.Create(&channel)
+	if !dbFeedFound {
+		log.Printf("Creating feed '%s'\n", feed.URL)
+		db.Create(&feed)
 		return nil
 	}
 
-	channel.ID = dbChannel.ID
-	channel.UpdatedAt = time.Now()
-	db.Omit("Items", "CreatedAt").Save(&channel)
+	feed.ID = dbFeed.ID
+	db.Omit("Items", "CreatedAt").Save(&feed)
 
-	db.Model(&dbChannel).Related(&dbChannel.Items)
+	db.Model(&dbFeed).Related(&dbFeed.Items)
 
 	// Compare items to existing items
 	// Update existing items and create new ones
-	dbItems := make(map[string]int, len(dbChannel.Items))
-	for _, dbItem := range dbChannel.Items {
-		dbItems[*dbItem.GUID] = dbItem.ID
+	dbItems := make(map[string]int, len(dbFeed.Items))
+	for _, dbItem := range dbFeed.Items {
+		dbItems[dbItem.GUID] = dbItem.ID
 	}
-	for _, item := range channel.Items {
-		dbID, exists := dbItems[*item.GUID]
+	for _, item := range feed.Items {
+		dbID, exists := dbItems[item.GUID]
 		if !exists {
-			item.ChannelID = dbChannel.ID
+			item.FeedID = dbFeed.ID
 			db.Create(&item)
 			continue
 		}
 		item.ID = dbID
-		item.UpdatedAt = time.Now()
-		db.Omit("GUID", "ChannelID", "PubDate", "Unix", "CreatedAt").Save(&item)
+		db.Omit("GUID", "FeedID", "PublishedAt", "CreatedAt").Save(&item)
 	}
 	return nil
 }
 
-func createAlias(alias *Channel, original *Channel, delete bool, db *gorm.DB) {
+func createAlias(alias *nimbus.Feed, original *nimbus.Feed, delete bool, db *gorm.DB) {
+
 	if alias.URL == original.URL {
 		return
 	}
 	log.Printf("Creating alias '%s' for '%s'\n", alias.URL, original.URL)
 	db.Create(&Alias{Alias: alias.URL, Original: original.URL})
+
 	if delete {
-		deleteChannel(alias, db)
+		deleteFeed(alias, db)
 	}
 }
 
-func deleteChannel(channel *Channel, db *gorm.DB) {
-	log.Printf("Deleting channel '%s'\n", channel.URL)
-	db.Where(&Alias{Original: channel.URL}).Delete(Alias{})
-	db.Where(&Item{ChannelID: channel.ID}).Delete(Item{})
-	db.Delete(channel)
+func deleteFeed(feed *nimbus.Feed, db *gorm.DB) {
+
+	log.Printf("Deleting feed '%s'\n", feed.URL)
+	db.Where(&Alias{Original: feed.URL}).Delete(Alias{})
+	db.Where(&nimbus.Item{FeedID: feed.ID}).Delete(nimbus.Item{})
+	db.Delete(feed)
 }
 
-func pollChannel(url string, db *gorm.DB) {
+func pollFeed(url string, db *gorm.DB) {
 
-	channel, err := fetchChannel(url)
+	feed, err := fetchFeed(url)
 	if err != nil {
 		db.Create(&Invalid{URL: url, Error: err.Error()})
 		log.Printf("Marked '%s' as invalid: %s", url, err)
-		dbChannel := Channel{URL: url}
-		if !db.Where(&dbChannel).First(&dbChannel).RecordNotFound() {
-			deleteChannel(&dbChannel, db)
+		dbFeed := nimbus.Feed{URL: url}
+		if !db.Where(&dbFeed).First(&dbFeed).RecordNotFound() {
+			deleteFeed(&dbFeed, db)
 		}
 		return
 	}
 
-	err = saveChannel(channel, db)
+	err = saveFeed(feed, db)
 	if err != nil {
-		log.Printf("Failed to save channel '%s': %s\n", url, err)
+		log.Printf("Failed to save feed '%s': %s\n", url, err)
 		return
 	}
 
-	log.Printf("Polled '%s', next poll at %v\n", url, channel.PollAt)
+	log.Printf("Polled '%s', next poll at %v\n", url, feed.NextPollAt)
 }
 
-func pollChannels(now *time.Time, db *gorm.DB) {
+func pollFeeds(now *time.Time, db *gorm.DB) {
 
 	var urls []string
 	var nextPoll = now.Add((pollFrequency + 1) * time.Second)
-	db.Model(&Channel{}).Where("poll_at < ?", nextPoll).Pluck("URL", &urls)
+	db.Model(&nimbus.Feed{}).Where("next_poll_at < ?", nextPoll).Pluck("URL", &urls)
 
 	for _, url := range urls {
-		go pollChannel(url, db)
+		go pollFeed(url, db)
 	}
 }
 
-func getChannel(url string, db *gorm.DB, repeat bool) (*Channel, bool) {
-	channel := Channel{URL: url}
-	if db.Where(&channel).First(&channel).RecordNotFound() {
+func getFeed(url string, db *gorm.DB, repeat bool) (*nimbus.Feed, bool) {
+
+	feed := nimbus.Feed{URL: url}
+	if db.Where(&feed).First(&feed).RecordNotFound() {
 		alias := Alias{Alias: url}
 		if !repeat && !db.Where(&alias).First(&alias).RecordNotFound() {
-			return getChannel(alias.Original, db, true)
+			return getFeed(alias.Original, db, true)
 		}
 		invalid := Invalid{URL: url}
 		if !db.Where(&invalid).First(&invalid).RecordNotFound() {
 			return nil, false
 		}
-		go pollChannel(url, db)
+		go pollFeed(url, db)
 		log.Printf("Started polling '%s'\n", url)
 		return nil, true
 	}
-	db.Model(&channel).Related(&channel.Items)
-	return &channel, true
+	db.Model(&feed).Related(&feed.Items)
+	return &feed, true
 }
 
 func handler(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
@@ -211,15 +169,15 @@ func handler(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	}
 
 	url := r.URL.Query().Get("url")
-	channel, polling := getChannel(url, db, false)
-	if channel == nil {
+	feed, polling := getFeed(url, db, false)
+	if feed == nil {
 		fmt.Fprintf(w, "%t\n", polling)
 		return
 	}
 
-	json, err := json.Marshal(&channel)
+	json, err := json.Marshal(&feed)
 	if err != nil {
-		log.Printf("Unable to marshal channel '%s': %s\n", url, err)
+		log.Printf("Unable to marshal feed '%s': %s\n", url, err)
 	}
 
 	fmt.Fprintln(w, string(json))
@@ -233,12 +191,13 @@ func getDB() *gorm.DB {
 	if err != nil {
 		log.Fatalf("%s\n", err)
 	}
+	
 	db.DB()
 	db.DB().Ping()
 	db.DB().SetMaxIdleConns(10)
 	db.DB().SetMaxOpenConns(100)
 	db.SingularTable(true)
-	db.AutoMigrate(&Channel{}, &Item{}, &Alias{}, &Invalid{})
+	db.AutoMigrate(&nimbus.Feed{}, &nimbus.Item{}, &Alias{}, &Invalid{})
 	return &db
 }
 
@@ -246,10 +205,10 @@ func main() {
 
 	db := getDB()
 
-	// Start polling channels
+	// Start polling feeds
 	go func() {
 		for now := range time.Tick(pollFrequency * time.Second) {
-			go pollChannels(&now, db)
+			go pollFeeds(&now, db)
 		}
 	}()
 
