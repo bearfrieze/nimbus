@@ -6,6 +6,7 @@ import (
 	"github.com/bearfrieze/nimbus/atom"
 	"github.com/bearfrieze/nimbus/rss"
 	"time"
+	"github.com/kennygrant/sanitize"
 )
 
 const (
@@ -78,7 +79,7 @@ func NewFeedFromRSS(rf *rss.Feed) *Feed {
 	items := make([]Item, len(rc.Items))
 	for key, ri := range rc.Items {
 		items[key] = Item{
-			Title:       ri.Title,
+			Title:       sanitize.HTML(ri.Title),
 			URL:         ri.Link,
 			GUID:        ri.GUID,
 			PublishedAt: PublishedAt([]string{ri.PubDate}),
@@ -97,7 +98,7 @@ func NewFeedFromAtom(af *atom.Feed) *Feed {
 	items := make([]Item, len(af.Entries))
 	for key, entry := range af.Entries {
 		items[key] = Item{
-			Title:       entry.Title,
+			Title:       sanitize.HTML(entry.Title),
 			URL:         entry.Links[0].Href,
 			GUID:        entry.ID,
 			PublishedAt: PublishedAt([]string{entry.Published, entry.Updated}),
