@@ -1,12 +1,13 @@
 package feed
 
 import (
+	"crypto/md5"
 	"crypto/sha256"
 	"fmt"
 	"github.com/bearfrieze/nimbus/atom"
 	"github.com/bearfrieze/nimbus/rss"
-	"time"
 	"github.com/kennygrant/sanitize"
+	"time"
 )
 
 const (
@@ -60,16 +61,36 @@ func (f Feed) Timeout() time.Duration {
 	return timeout
 }
 
-func NewFeed(data []byte) (*Feed, error) {
+func NewFeed(url string, data []byte) (*Feed, error) {
+	var f *Feed
 	rf, re := rss.NewFeed(data)
 	if re == nil {
-		return NewFeedFromRSS(rf), nil
+		f = NewFeedFromRSS(rf)
 	}
 	af, ae := atom.NewFeed(data)
 	if ae == nil {
-		return NewFeedFromAtom(af), nil
+		f = NewFeedFromAtom(af)
 	}
-	return nil, fmt.Errorf("Feed is not RSS: %s\nFeed is not Atom: %s\n", re, ae)
+	if f == nil {
+		return nil, fmt.Errorf("Feed is not RSS: %s\nFeed is not Atom: %s\n", re, ae)
+	}
+	for key, item := range f.Items {
+		item.Title = sanitize.HTML(item.Title)
+		if item.GUID == "" {
+			item.GUID = fmt.Sprintf(
+				"%x:%x:%d",
+				md5.Sum([]byte(url)),
+				md5.Sum([]byte(item.Title)),
+				item.PublishedAt.Unix(),
+			)
+			fmt.Println(item.GUID)
+		}
+		f.Items[key] = item
+	}
+	f.URL = url
+	f.NextPollAt = time.Now().Add(f.Timeout())
+	f.UpdatedAt = time.Now()
+	return f, nil
 }
 
 func NewFeedFromRSS(rf *rss.Feed) *Feed {
@@ -79,7 +100,7 @@ func NewFeedFromRSS(rf *rss.Feed) *Feed {
 	items := make([]Item, len(rc.Items))
 	for key, ri := range rc.Items {
 		items[key] = Item{
-			Title:       sanitize.HTML(ri.Title),
+			Title:       ri.Title,
 			URL:         ri.Link,
 			GUID:        ri.GUID,
 			PublishedAt: PublishedAt([]string{ri.PubDate}),
@@ -98,7 +119,7 @@ func NewFeedFromAtom(af *atom.Feed) *Feed {
 	items := make([]Item, len(af.Entries))
 	for key, entry := range af.Entries {
 		items[key] = Item{
-			Title:       sanitize.HTML(entry.Title),
+			Title:       entry.Title,
 			URL:         entry.Links[0].Href,
 			GUID:        entry.ID,
 			PublishedAt: PublishedAt([]string{entry.Published, entry.Updated}),

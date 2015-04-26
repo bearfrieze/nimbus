@@ -20,7 +20,7 @@ func TestRSSArsTechnica(t *testing.T) {
 			},
 		},
 	}
-	tc := NewTestCase("rss/arstechnica", &expected, t)
+	tc := NewTestCase("http://feeds.arstechnica.com/arstechnica/index?format=xml", "rss/arstechnica", &expected, t)
 	tc.Test(t)
 }
 
@@ -36,7 +36,7 @@ func TestRSSXKCD(t *testing.T) {
 			},
 		},
 	}
-	tc := NewTestCase("rss/xkcd", &expected, t)
+	tc := NewTestCase("http://xkcd.com/rss.xml", "rss/xkcd", &expected, t)
 	tc.Test(t)
 }
 
@@ -52,7 +52,7 @@ func TestAtomSlashdot(t *testing.T) {
 			},
 		},
 	}
-	tc := NewTestCase("atom/slashdot", &expected, t)
+	tc := NewTestCase("http://rss.slashdot.org/slashdot/slashdotMainatom?format=xml", "atom/slashdot", &expected, t)
 	tc.Test(t)
 }
 
@@ -68,7 +68,7 @@ func TestAtomTheVerge(t *testing.T) {
 			},
 		},
 	}
-	tc := NewTestCase("atom/theverge", &expected, t)
+	tc := NewTestCase("http://www.theverge.com/rss/full.xml", "atom/theverge", &expected, t)
 	tc.Test(t)
 }
 
@@ -84,7 +84,7 @@ func TestAtomXKCD(t *testing.T) {
 			},
 		},
 	}
-	tc := NewTestCase("atom/xkcd", &expected, t)
+	tc := NewTestCase("http://xkcd.com/atom.xml", "atom/xkcd", &expected, t)
 	tc.Test(t)
 }
 
@@ -93,13 +93,13 @@ type TestCase struct {
 	Expected *Feed
 }
 
-func NewTestCase(name string, expected *Feed, t *testing.T) TestCase {
+func NewTestCase(url string, name string, expected *Feed, t *testing.T) TestCase {
 	path := fmt.Sprintf("test_fixtures/%s.xml", name)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		t.Errorf("Failed to read data: %s", err)
 	}
-	actual, err := NewFeed(data)
+	actual, err := NewFeed(url, data)
 	if err != nil {
 		t.Errorf("Failed to decode data: %s", err)
 	}
