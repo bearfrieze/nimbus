@@ -67,16 +67,9 @@ func (f Feed) Timeout() time.Duration {
 
 func NewFeed(url string, data []byte) (*Feed, error) {
 	var f *Feed
-	rf, re := rss.NewFeed(data)
-	if re == nil {
-		f = NewFeedFromRSS(rf)
-	}
-	af, ae := atom.NewFeed(data)
-	if ae == nil {
-		f = NewFeedFromAtom(af)
-	}
-	if f == nil {
-		return nil, fmt.Errorf("Feed is not RSS: %s, Feed is not Atom: %s", re, ae)
+	f, err := NewFeedFromUnknown(data)
+	if err != nil {
+		return nil, err
 	}
 	for key, item := range f.Items {
 		item.Title = sanitize.HTML(item.Title)
@@ -95,6 +88,18 @@ func NewFeed(url string, data []byte) (*Feed, error) {
 	f.NextPollAt = time.Now().Add(f.Timeout())
 	f.UpdatedAt = time.Now()
 	return f, nil
+}
+
+func NewFeedFromUnknown(data []byte) (*Feed, error) {
+	rf, re := rss.NewFeed(data)
+	if re == nil {
+		return NewFeedFromRSS(rf), nil
+	}
+	af, ae := atom.NewFeed(data)
+	if ae == nil {
+		return NewFeedFromAtom(af), nil
+	}
+	return nil, fmt.Errorf("Feed is not RSS: %s, Feed is not Atom: %s", re, ae)
 }
 
 func NewFeedFromRSS(rf *rss.Feed) *Feed {

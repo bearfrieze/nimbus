@@ -50,7 +50,10 @@ func IsFeed(data []byte) bool {
 	decoder := xml.NewDecoder(bytes.NewReader(data))
 	decoder.CharsetReader = charset.NewReaderLabel
 	for {
-		token, _ := decoder.Token()
+		token, err := decoder.Token()
+		if err != nil {
+			break
+		}
 		if se, ok := token.(xml.StartElement); ok {
 			return se.Name.Local == "feed"
 		}

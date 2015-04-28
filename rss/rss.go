@@ -29,7 +29,6 @@ type Item struct {
 }
 
 func NewFeed(data []byte) (*Feed, error) {
-
 	if !IsFeed(data) {
 		return nil, fmt.Errorf("Not an RSS feed")
 	}
@@ -50,9 +49,11 @@ func IsFeed(data []byte) bool {
 	decoder := xml.NewDecoder(bytes.NewReader(data))
 	decoder.CharsetReader = charset.NewReaderLabel
 	for {
-		token, _ := decoder.Token()
+		token, err := decoder.Token()
+		if err != nil {
+			break
+		}
 		if se, ok := token.(xml.StartElement); ok {
-			// fmt.Printf("%+v\n\n", se)
 			return se.Name.Local == "rss"
 		}
 	}

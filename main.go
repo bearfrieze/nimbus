@@ -26,9 +26,10 @@ var (
 
 func fetchFeed(url string) (*nimbus.Feed, error) {
 
+	log.Printf("Fetching %s\n", url)
 	r, err := client.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load feed '%s': %s", url, err)
+		return nil, fmt.Errorf("Failed to fetch %s: %s", url, err)
 	}
 	data, _ := ioutil.ReadAll(r.Body)
 	return nimbus.NewFeed(url, data)
@@ -43,11 +44,11 @@ func saveFeed(feed *nimbus.Feed, db *gorm.DB) error {
 
 	if dbDuplicateFound && !(dbFeedFound && dbFeed.ID == dbDuplicate.ID) {
 		createAlias(&dbFeed, &dbDuplicate, dbFeedFound, db)
-		return fmt.Errorf("Duplicate feed '%s' found, alias created", dbDuplicate.URL)
+		return fmt.Errorf("Duplicate %s found, alias created", dbDuplicate.URL)
 	}
 
 	if !dbFeedFound {
-		log.Printf("Creating feed '%s'\n", feed.URL)
+		log.Printf("Creating %s\n", feed.URL)
 		db.Create(&feed)
 		return nil
 	}
@@ -81,7 +82,7 @@ func createAlias(alias *nimbus.Feed, original *nimbus.Feed, delete bool, db *gor
 	if alias.URL == original.URL {
 		return
 	}
-	log.Printf("Creating alias '%s' for '%s'\n", alias.URL, original.URL)
+	log.Printf("Creating alias %s for %s\n", alias.URL, original.URL)
 	db.Create(&nimbus.Alias{Alias: alias.URL, Original: original.URL})
 
 	if delete {
@@ -91,7 +92,7 @@ func createAlias(alias *nimbus.Feed, original *nimbus.Feed, delete bool, db *gor
 
 func deleteFeed(feed *nimbus.Feed, db *gorm.DB) {
 
-	log.Printf("Deleting feed '%s'\n", feed.URL)
+	log.Printf("Deleting %s\n", feed.URL)
 	db.Where(&nimbus.Alias{Original: feed.URL}).Delete(nimbus.Alias{})
 	db.Where(&nimbus.Item{FeedID: feed.ID}).Delete(nimbus.Item{})
 	db.Delete(feed)
@@ -103,12 +104,15 @@ func pollFeed(url string, db *gorm.DB) {
 		log.Printf("Already polling %s\n", url)
 		return
 	}
+	polling[url] = true
 	defer delete(polling, url)
+
+	log.Printf("Polling %s\n", url)
 
 	feed, err := fetchFeed(url)
 	if err != nil {
+		log.Printf("Marking %s as invalid: %s", url, err)
 		db.Create(&nimbus.Invalid{URL: url, Error: err.Error()})
-		log.Printf("Marked '%s' as invalid: %s", url, err)
 		dbFeed := nimbus.Feed{URL: url}
 		if !db.Where(&dbFeed).First(&dbFeed).RecordNotFound() {
 			deleteFeed(&dbFeed, db)
@@ -118,11 +122,11 @@ func pollFeed(url string, db *gorm.DB) {
 
 	err = saveFeed(feed, db)
 	if err != nil {
-		log.Printf("Failed to save feed '%s': %s\n", url, err)
+		log.Printf("Failed to save %s: %s\n", url, err)
 		return
 	}
 
-	log.Printf("Polled '%s', next poll at %v\n", url, feed.NextPollAt)
+	log.Printf("Polled %s, next poll at %v\n", url, feed.NextPollAt)
 }
 
 func pollFeeds(now *time.Time, db *gorm.DB) {
@@ -149,7 +153,6 @@ func getFeed(url string, db *gorm.DB, repeat bool) (*nimbus.Feed, bool) {
 			return nil, false
 		}
 		go pollFeed(url, db)
-		log.Printf("Started polling '%s'\n", url)
 		return nil, true
 	}
 	db.Model(&feed).Related(&feed.Items)
