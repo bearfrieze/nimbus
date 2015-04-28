@@ -19,9 +19,14 @@ const (
 	pollFrequency = 15
 )
 
+var (
+	client  http.Client
+	polling map[string]bool
+)
+
 func fetchFeed(url string) (*nimbus.Feed, error) {
 
-	r, err := http.Get(url)
+	r, err := client.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to load feed '%s': %s", url, err)
 	}
@@ -93,6 +98,12 @@ func deleteFeed(feed *nimbus.Feed, db *gorm.DB) {
 }
 
 func pollFeed(url string, db *gorm.DB) {
+
+	if _, ok := polling[url]; ok {
+		log.Printf("Already polling %s\n", url)
+		return
+	}
+	defer delete(polling, url)
 
 	feed, err := fetchFeed(url)
 	if err != nil {
@@ -180,8 +191,8 @@ func getDB() *gorm.DB {
 
 	db.DB()
 	db.DB().Ping()
-	db.DB().SetMaxIdleConns(10)
 	db.DB().SetMaxOpenConns(100)
+	db.DB().SetMaxIdleConns(50)
 	db.SingularTable(true)
 	db.AutoMigrate(&nimbus.Feed{}, &nimbus.Item{}, &nimbus.Alias{}, &nimbus.Invalid{})
 	return &db
@@ -191,7 +202,13 @@ func main() {
 
 	db := getDB()
 
+	// Make custom http client with timeout
+	client = http.Client{
+		Timeout: time.Duration(5 * time.Second),
+	}
+
 	// Start polling feeds
+	polling = make(map[string]bool)
 	go func() {
 		for now := range time.Tick(pollFrequency * time.Second) {
 			go pollFeeds(&now, db)
