@@ -162,6 +162,7 @@ func getFeed(url string, db *gorm.DB, repeat bool) (*nimbus.Feed, bool) {
 func handler(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 
 	if r.Method != "GET" {
 		http.Error(w, fmt.Sprintf("Unsupported method '%s'\n", r.Method), 501)
@@ -171,6 +172,9 @@ func handler(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	url := r.URL.Query().Get("url")
 	feed, polling := getFeed(url, db, false)
 	if feed == nil {
+		if !polling {
+			w.Header().Set("Cache-Control", fmt.Sprintf("max-age:%d, public", 60*60*24))
+		}
 		fmt.Fprintf(w, "%t\n", polling)
 		return
 	}
@@ -180,6 +184,8 @@ func handler(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 		log.Printf("Unable to marshal feed '%s': %s\n", url, err)
 	}
 
+	seconds := int(feed.NextPollAt.Sub(time.Now()).Seconds()) + pollFrequency
+	w.Header().Set("Cache-Control", fmt.Sprintf("max-age:%d, public", seconds))
 	fmt.Fprintln(w, string(json))
 }
 
