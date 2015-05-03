@@ -17,6 +17,7 @@ const (
 	minTimeout    = 60
 	maxTimeout    = 60 * 24
 	pollFrequency = 15
+	itemLimit     = 50
 )
 
 var (
@@ -155,7 +156,7 @@ func getFeed(url string, db *gorm.DB, repeat bool) (*nimbus.Feed, bool) {
 		go pollFeed(url, db)
 		return nil, true
 	}
-	db.Model(&feed).Related(&feed.Items)
+	db.Model(&feed).Order("published_at desc").Limit(itemLimit).Related(&feed.Items)
 	return &feed, true
 }
 
