@@ -114,10 +114,6 @@ func pollFeed(url string, db *gorm.DB) {
 	if err != nil {
 		log.Printf("Marking %s as invalid: %s", url, err)
 		db.Create(&nimbus.Invalid{URL: url, Error: err.Error()})
-		dbFeed := nimbus.Feed{URL: url}
-		if !db.Where(&dbFeed).First(&dbFeed).RecordNotFound() {
-			deleteFeed(&dbFeed, db)
-		}
 		return
 	}
 
