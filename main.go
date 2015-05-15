@@ -156,6 +156,12 @@ func getFeed(url string, db *gorm.DB, repeat bool) (*nimbus.Feed, bool) {
 	return &feed, true
 }
 
+func cleanInvalid(now *time.Time, db *gorm.DB) {
+
+	aWeekAgo := time.Now().Add(-time.Hour * 24 * 7)
+	db.Where("created_at < ?", aWeekAgo).Delete(nimbus.Invalid{})
+}
+
 func handler(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -218,6 +224,7 @@ func main() {
 	go func() {
 		for now := range time.Tick(pollFrequency * time.Second) {
 			go pollFeeds(&now, db)
+			go cleanInvalid(&now, db)
 		}
 	}()
 
