@@ -19,6 +19,7 @@ type Entry struct {
 	Published string `xml:"published"`
 	Updated   string `xml:"updated"`
 	Summary   string `xml:"summary"`
+	Content   string `xml:"content"`
 	Links     []Link `xml:"link"`
 	ID        string `xml:"id"`
 }

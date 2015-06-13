@@ -7,6 +7,8 @@ import (
 	"github.com/bearfrieze/nimbus/atom"
 	"github.com/bearfrieze/nimbus/rss"
 	"github.com/kennygrant/sanitize"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -21,6 +23,7 @@ var (
 		time.RFC1123,
 		time.RFC1123Z,
 	}
+	rexRepeatWhitespace = regexp.MustCompile(`\s\s+`)
 )
 
 type Feed struct {
@@ -38,6 +41,7 @@ type Item struct {
 	ID          int       `json:"-"`
 	FeedID      int       `json:"-" sql:"index"`
 	Title       string    `json:"title"`
+	Teaser      string    `json:"teaser"`
 	URL         string    `json:"url"`
 	GUID        string    `json:"guid" sql:"index"`
 	PublishedAt time.Time `json:"published_at"`
@@ -65,6 +69,13 @@ func (f Feed) Timeout() time.Duration {
 	return timeout
 }
 
+func cleanText(text string) string {
+	text = sanitize.HTML(text)
+	text = strings.Replace(text, "\n", " ", -1)
+	text = rexRepeatWhitespace.ReplaceAllLiteralString(text, "")
+	return strings.TrimSpace(text)
+}
+
 func NewFeed(url string, data []byte) (*Feed, error) {
 	var f *Feed
 	f, err := NewFeedFromUnknown(data)
@@ -72,7 +83,8 @@ func NewFeed(url string, data []byte) (*Feed, error) {
 		return nil, err
 	}
 	for key, item := range f.Items {
-		item.Title = sanitize.HTML(item.Title)
+		item.Title = cleanText(item.Title)
+		item.Teaser = cleanText(item.Teaser)
 		if item.GUID == "" {
 			item.GUID = fmt.Sprintf(
 				"%x:%x:%d",
@@ -110,6 +122,7 @@ func NewFeedFromRSS(rf *rss.Feed) *Feed {
 	for key, ri := range rc.Items {
 		items[key] = Item{
 			Title:       ri.Title,
+			Teaser:      ri.Description,
 			URL:         ri.Link,
 			GUID:        ri.GUID,
 			PublishedAt: PublishedAt([]string{ri.PubDate}),
@@ -131,8 +144,15 @@ func NewFeedFromAtom(af *atom.Feed) *Feed {
 		if len(entry.Links) > 0 {
 			url = entry.Links[0].Href
 		}
+		var teaser string
+		if len(entry.Summary) > 0 {
+			teaser = entry.Summary
+		} else {
+			teaser = entry.Content
+		}
 		items[key] = Item{
 			Title:       entry.Title,
+			Teaser:      teaser,
 			URL:         url,
 			GUID:        entry.ID,
 			PublishedAt: PublishedAt([]string{entry.Published, entry.Updated}),
