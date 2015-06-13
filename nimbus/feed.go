@@ -41,7 +41,7 @@ type Item struct {
 	ID          int       `json:"-"`
 	FeedID      int       `json:"-" sql:"index"`
 	Title       string    `json:"title"`
-	Teaser      string    `json:"teaser"`
+	Teaser      string    `json:"teaser" sql:"type:text"`
 	URL         string    `json:"url"`
 	GUID        string    `json:"guid" sql:"index"`
 	PublishedAt time.Time `json:"published_at"`
@@ -76,6 +76,13 @@ func cleanText(text string) string {
 	return strings.TrimSpace(text)
 }
 
+func limitStringLength(text string, limit int) string {
+	if len(text) > limit {
+		return text[:limit]
+	}
+	return text
+}
+
 func NewFeed(url string, data []byte) (*Feed, error) {
 	var f *Feed
 	f, err := NewFeedFromUnknown(data)
@@ -83,7 +90,8 @@ func NewFeed(url string, data []byte) (*Feed, error) {
 		return nil, err
 	}
 	for key, item := range f.Items {
-		item.Title = cleanText(item.Title)
+		item.Title = limitStringLength(cleanText(item.Title), 255)
+		item.URL = limitStringLength(item.URL, 255)
 		item.Teaser = cleanText(item.Teaser)
 		if item.GUID == "" {
 			item.GUID = fmt.Sprintf(
@@ -96,7 +104,7 @@ func NewFeed(url string, data []byte) (*Feed, error) {
 		f.Items[key] = item
 		f.UpdatedAt = time.Now()
 	}
-	f.URL = url
+	f.URL = limitStringLength(url, 255)
 	f.NextPollAt = time.Now().Add(f.Timeout())
 	f.UpdatedAt = time.Now()
 	return f, nil
