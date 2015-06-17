@@ -92,7 +92,8 @@ func NewFeed(url string, data []byte) (*Feed, error) {
 	for key, item := range f.Items {
 		item.Title = limitStringLength(cleanText(item.Title), 255)
 		item.URL = limitStringLength(item.URL, 255)
-		item.Teaser = limitStringLength(cleanText(item.Teaser), 1000)
+		item.Teaser = ""
+		// item.Teaser = limitStringLength(cleanText(item.Teaser), 1000)
 		if item.GUID == "" {
 			item.GUID = fmt.Sprintf(
 				"%x:%x:%d",
