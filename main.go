@@ -137,6 +137,9 @@ func pollFeeds(now *time.Time, db *gorm.DB) {
 
 func getFeed(url string, db *gorm.DB, repeat bool) (*nimbus.Feed, bool) {
 
+	if len(url) == 0 {
+		return nil, false
+	}
 	feed := nimbus.Feed{URL: url}
 	if db.Where(&feed).First(&feed).RecordNotFound() {
 		alias := nimbus.Alias{Alias: url}
