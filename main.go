@@ -16,7 +16,7 @@ import (
 const (
 	pollFrequency = 15
 	itemLimit     = 50
-	workerCount   = 30
+	workerCount   = 26
 )
 
 var (
@@ -219,8 +219,8 @@ func getDB() *gorm.DB {
 
 	db.DB()
 	db.DB().Ping()
-	db.DB().SetMaxOpenConns(30)
-	db.DB().SetMaxIdleConns(15)
+	db.DB().SetMaxOpenConns(workerCount)
+	db.DB().SetMaxIdleConns(workerCount / 2)
 	db.SingularTable(true)
 	db.AutoMigrate(&nimbus.Feed{}, &nimbus.Item{}, &nimbus.Alias{}, &nimbus.Invalid{})
 	return &db
