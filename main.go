@@ -143,7 +143,7 @@ func pollFeeds(now *time.Time) {
 
 	var urls []string
 	var nextPoll = now.Add((pollFrequency + 1) * time.Second)
-	db.Model(&nimbus.Feed{}).Where("next_poll_at < ?", nextPoll).Pluck("URL", &urls)
+	db.Model(&nimbus.Feed{}).Joins("LEFT JOIN invalid ON invalid.url = feed.url").Where("next_poll_at < ? AND invalid.id IS NULL", nextPoll).Pluck("feed.url", &urls)
 
 	for _, url := range urls {
 		go queueFeed(url)
