@@ -14,9 +14,10 @@ import (
 )
 
 const (
-	pollFrequency = 15
-	itemLimit     = 50
-	workerCount   = 26
+	pollFrequency   = 15
+	itemLimit       = 50
+	workerCount     = 26
+	invalidDuration = time.Hour * 24 * 7
 )
 
 var (
@@ -117,6 +118,7 @@ func pollFeed(url string) {
 	if err != nil {
 		log.Printf("Marking %s as invalid: %s", url, err)
 		db.Create(&nimbus.Invalid{URL: url, Error: err.Error()})
+		db.Model(&nimbus.Feed{}).Where("url = ?", url).UpdateColumn("next_poll_at", time.Now().Add(invalidDuration))
 		return
 	}
 
@@ -143,7 +145,7 @@ func pollFeeds(now *time.Time) {
 
 	var urls []string
 	var nextPoll = now.Add((pollFrequency + 1) * time.Second)
-	db.Model(&nimbus.Feed{}).Joins("LEFT JOIN invalid ON invalid.url = feed.url").Where("next_poll_at < ? AND invalid.id IS NULL", nextPoll).Pluck("feed.url", &urls)
+	db.Model(&nimbus.Feed{}).Where("next_poll_at < ?", nextPoll).Pluck("url", &urls)
 
 	for _, url := range urls {
 		go queueFeed(url)
@@ -174,7 +176,7 @@ func getFeed(url string, repeat bool) (*nimbus.Feed, bool) {
 
 func cleanInvalid(now *time.Time) {
 
-	aWeekAgo := time.Now().Add(-time.Hour * 24 * 7)
+	aWeekAgo := time.Now().Add(-(invalidDuration - pollFrequency))
 	db.Where("created_at < ?", aWeekAgo).Delete(nimbus.Invalid{})
 }
 
