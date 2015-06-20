@@ -16,11 +16,14 @@ import (
 const (
 	pollFrequency = 15
 	itemLimit     = 50
+	workerCount   = 100
 )
 
 var (
+	db      *gorm.DB
 	client  http.Client
-	polling map[string]bool
+	queued  map[string]bool = make(map[string]bool)
+	channel chan string     = make(chan string, workerCount)
 )
 
 func fetchFeed(url string) (*nimbus.Feed, error) {
@@ -34,7 +37,7 @@ func fetchFeed(url string) (*nimbus.Feed, error) {
 	return nimbus.NewFeed(url, data)
 }
 
-func saveFeed(feed *nimbus.Feed, db *gorm.DB) error {
+func saveFeed(feed *nimbus.Feed) error {
 
 	dbFeed := nimbus.Feed{URL: feed.URL}
 	dbDuplicate := nimbus.Feed{Sum: feed.Sum}
@@ -42,7 +45,7 @@ func saveFeed(feed *nimbus.Feed, db *gorm.DB) error {
 	dbDuplicateFound := !db.Where(&dbDuplicate).First(&dbDuplicate).RecordNotFound()
 
 	if dbDuplicateFound && !(dbFeedFound && dbFeed.ID == dbDuplicate.ID) {
-		createAlias(&dbFeed, &dbDuplicate, dbFeedFound, db)
+		createAlias(&dbFeed, &dbDuplicate, dbFeedFound)
 		return fmt.Errorf("Duplicate %s found, alias created", dbDuplicate.URL)
 	}
 
@@ -76,7 +79,7 @@ func saveFeed(feed *nimbus.Feed, db *gorm.DB) error {
 	return nil
 }
 
-func createAlias(alias *nimbus.Feed, original *nimbus.Feed, delete bool, db *gorm.DB) {
+func createAlias(alias *nimbus.Feed, original *nimbus.Feed, delete bool) {
 
 	if alias.URL == original.URL {
 		return
@@ -85,11 +88,11 @@ func createAlias(alias *nimbus.Feed, original *nimbus.Feed, delete bool, db *gor
 	db.Create(&nimbus.Alias{Alias: alias.URL, Original: original.URL})
 
 	if delete {
-		deleteFeed(alias, db)
+		deleteFeed(alias)
 	}
 }
 
-func deleteFeed(feed *nimbus.Feed, db *gorm.DB) {
+func deleteFeed(feed *nimbus.Feed) {
 
 	log.Printf("Deleting %s\n", feed.URL)
 	db.Where(&nimbus.Alias{Original: feed.URL}).Delete(nimbus.Alias{})
@@ -97,14 +100,16 @@ func deleteFeed(feed *nimbus.Feed, db *gorm.DB) {
 	db.Delete(feed)
 }
 
-func pollFeed(url string, db *gorm.DB) {
+func worker() {
 
-	if _, ok := polling[url]; ok {
-		log.Printf("Already polling %s\n", url)
-		return
+	for {
+		url := <-channel
+		delete(queued, url)
+		pollFeed(url)
 	}
-	polling[url] = true
-	defer delete(polling, url)
+}
+
+func pollFeed(url string) {
 
 	log.Printf("Polling %s\n", url)
 
@@ -115,7 +120,7 @@ func pollFeed(url string, db *gorm.DB) {
 		return
 	}
 
-	err = saveFeed(feed, db)
+	err = saveFeed(feed)
 	if err != nil {
 		log.Printf("Failed to save %s: %s\n", url, err)
 		return
@@ -124,18 +129,28 @@ func pollFeed(url string, db *gorm.DB) {
 	log.Printf("Polled %s, next poll at %v\n", url, feed.NextPollAt)
 }
 
-func pollFeeds(now *time.Time, db *gorm.DB) {
+func queueFeed(url string) {
+
+	if _, ok := queued[url]; ok {
+		log.Printf("Already polling %s\n", url)
+		return
+	}
+	queued[url] = true
+	channel <- url
+}
+
+func pollFeeds(now *time.Time) {
 
 	var urls []string
 	var nextPoll = now.Add((pollFrequency + 1) * time.Second)
 	db.Model(&nimbus.Feed{}).Where("next_poll_at < ?", nextPoll).Pluck("URL", &urls)
 
 	for _, url := range urls {
-		go pollFeed(url, db)
+		go queueFeed(url)
 	}
 }
 
-func getFeed(url string, db *gorm.DB, repeat bool) (*nimbus.Feed, bool) {
+func getFeed(url string, repeat bool) (*nimbus.Feed, bool) {
 
 	if len(url) == 0 {
 		return nil, false
@@ -144,26 +159,26 @@ func getFeed(url string, db *gorm.DB, repeat bool) (*nimbus.Feed, bool) {
 	if db.Where(&feed).First(&feed).RecordNotFound() {
 		alias := nimbus.Alias{Alias: url}
 		if !repeat && !db.Where(&alias).First(&alias).RecordNotFound() {
-			return getFeed(alias.Original, db, true)
+			return getFeed(alias.Original, true)
 		}
 		invalid := nimbus.Invalid{URL: url}
 		if !db.Where(&invalid).First(&invalid).RecordNotFound() {
 			return nil, false
 		}
-		go pollFeed(url, db)
+		go queueFeed(url)
 		return nil, true
 	}
 	db.Model(&feed).Order("published_at desc").Limit(itemLimit).Related(&feed.Items)
 	return &feed, true
 }
 
-func cleanInvalid(now *time.Time, db *gorm.DB) {
+func cleanInvalid(now *time.Time) {
 
 	aWeekAgo := time.Now().Add(-time.Hour * 24 * 7)
 	db.Where("created_at < ?", aWeekAgo).Delete(nimbus.Invalid{})
 }
 
-func handler(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+func handler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
@@ -174,7 +189,7 @@ func handler(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	}
 
 	url := r.URL.Query().Get("url")
-	feed, polling := getFeed(url, db, false)
+	feed, polling := getFeed(url, false)
 	if feed == nil {
 		if !polling {
 			w.Header().Set("Cache-Control", fmt.Sprintf("max-age:%d, public", 60*60*24))
@@ -213,24 +228,29 @@ func getDB() *gorm.DB {
 
 func main() {
 
-	db := getDB()
+	db = getDB()
 
 	// Make custom http client with timeout
 	client = http.Client{
 		Timeout: time.Duration(5 * time.Second),
 	}
 
+	// Start workers
+	for i := 0; i < workerCount; i++ {
+		go worker()
+	}
+
 	// Start polling feeds
-	polling = make(map[string]bool)
 	go func() {
 		for now := range time.Tick(pollFrequency * time.Second) {
-			go pollFeeds(&now, db)
-			go cleanInvalid(&now, db)
+			log.Printf("Queue length: %d\n", len(queued))
+			go pollFeeds(&now)
+			go cleanInvalid(&now)
 		}
 	}()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		handler(w, r, db)
+		handler(w, r)
 	})
 
 	port := os.Getenv("PORT")
