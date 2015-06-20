@@ -14,8 +14,6 @@ import (
 )
 
 const (
-	minTimeout    = 60
-	maxTimeout    = 60 * 24
 	pollFrequency = 15
 	itemLimit     = 50
 )
