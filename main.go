@@ -16,19 +16,19 @@ import (
 const (
 	pollFrequency   = 15
 	itemLimit       = 50
-	workerCount     = 26
+	workerCount     = 20
 	invalidDuration = time.Hour * 24 * 7
 )
 
 var (
+	ca      *nimbus.Cache
 	db      *gorm.DB
-	client  http.Client
+	client  *http.Client
 	queued  map[string]bool = make(map[string]bool)
 	channel chan string     = make(chan string, workerCount)
 )
 
 func fetchFeed(url string) (*nimbus.Feed, error) {
-
 	log.Printf("Fetching %s\n", url)
 	r, err := client.Get(url)
 	if err != nil {
@@ -88,13 +88,14 @@ func createAlias(alias *nimbus.Feed, original *nimbus.Feed, delete bool) {
 	log.Printf("Creating alias %s for %s\n", alias.URL, original.URL)
 	db.Create(&nimbus.Alias{Alias: alias.URL, Original: original.URL})
 
+	ca.SetAlias(alias.URL, original.URL)
+
 	if delete {
 		deleteFeed(alias)
 	}
 }
 
 func deleteFeed(feed *nimbus.Feed) {
-
 	log.Printf("Deleting %s\n", feed.URL)
 	db.Where(&nimbus.Alias{Original: feed.URL}).Delete(nimbus.Alias{})
 	db.Where(&nimbus.Item{FeedID: feed.ID}).Delete(nimbus.Item{})
@@ -102,7 +103,6 @@ func deleteFeed(feed *nimbus.Feed) {
 }
 
 func worker() {
-
 	for {
 		url := <-channel
 		delete(queued, url)
@@ -128,12 +128,13 @@ func pollFeed(url string) {
 		return
 	}
 
+	ca.SetFeed(getFeed(url))
+
 	log.Printf("Polled %s, next poll at %v\n", url, feed.NextPollAt)
 }
 
 func queueFeed(url string) {
-
-	if _, ok := queued[url]; ok {
+	if _, exists := queued[url]; exists {
 		log.Printf("Already polling %s\n", url)
 		return
 	}
@@ -152,17 +153,59 @@ func pollFeeds(now *time.Time) {
 	}
 }
 
-func getFeed(url string, repeat bool) (*nimbus.Feed, bool) {
+func cleanInvalid(now *time.Time) {
+	var invalids []nimbus.Invalid
+	aWeekAgo := time.Now().Add(-(invalidDuration - pollFrequency))
+	db.Where("created_at < ?", aWeekAgo).Find(&invalids)
+	for _, invalid := range invalids {
+		db.Delete(&invalid)
+		ca.RemoveInvalid(invalid.URL)
+	}
+}
 
+func handler(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(200)
+		return
+	}
+
+	if r.Method != "POST" {
+		http.Error(w, fmt.Sprintf("Unsupported method '%s'\n", r.Method), 501)
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var urls []string
+	err := decoder.Decode(&urls)
+	if err != nil {
+		log.Printf("Unable to decode request: %s\n", err)
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	response, missing := ca.GetFeeds(urls)
+	json, err := json.Marshal(&response)
+	if err != nil {
+		log.Printf("Unable to marshal response: %s\n", err)
+	}
+
+	for _, url := range missing {
+		go queueFeed(url)
+	}
+
+	w.Write(json)
+}
+
+func getFeed(url string) (*nimbus.Feed, bool) {
 	if len(url) == 0 {
 		return nil, false
 	}
 	feed := nimbus.Feed{URL: url}
 	if db.Where(&feed).First(&feed).RecordNotFound() {
-		alias := nimbus.Alias{Alias: url}
-		if !repeat && !db.Where(&alias).First(&alias).RecordNotFound() {
-			return getFeed(alias.Original, true)
-		}
 		invalid := nimbus.Invalid{URL: url}
 		if !db.Where(&invalid).First(&invalid).RecordNotFound() {
 			return nil, false
@@ -174,43 +217,7 @@ func getFeed(url string, repeat bool) (*nimbus.Feed, bool) {
 	return &feed, true
 }
 
-func cleanInvalid(now *time.Time) {
-
-	aWeekAgo := time.Now().Add(-(invalidDuration - pollFrequency))
-	db.Where("created_at < ?", aWeekAgo).Delete(nimbus.Invalid{})
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-
-	if r.Method != "GET" {
-		http.Error(w, fmt.Sprintf("Unsupported method '%s'\n", r.Method), 501)
-		return
-	}
-
-	url := r.URL.Query().Get("url")
-	feed, polling := getFeed(url, false)
-	if feed == nil {
-		if !polling {
-			w.Header().Set("Cache-Control", fmt.Sprintf("max-age:%d, public", 60*60*24))
-		}
-		fmt.Fprintf(w, "%t\n", polling)
-		return
-	}
-
-	json, err := json.Marshal(&feed)
-	if err != nil {
-		log.Printf("Unable to marshal feed '%s': %s\n", url, err)
-	}
-
-	seconds := int(feed.NextPollAt.Sub(time.Now()).Seconds()) + pollFrequency
-	w.Header().Set("Cache-Control", fmt.Sprintf("max-age:%d, public", seconds))
-	fmt.Fprintln(w, string(json))
-}
-
-func getDB() *gorm.DB {
+func newDb() *gorm.DB {
 
 	args := fmt.Sprintf("sslmode=disable host=%s port=%s dbname=%s user=%s password=%s", os.Getenv("PGHOST"), os.Getenv("PGPORT"), os.Getenv("PGDATABASE"), os.Getenv("PGUSER"), os.Getenv("PGPASSWORD"))
 	log.Printf("Connecting to postgres: %s\n", args)
@@ -220,7 +227,6 @@ func getDB() *gorm.DB {
 	}
 
 	db.DB()
-	db.DB().Ping()
 	db.DB().SetMaxOpenConns(workerCount)
 	db.DB().SetMaxIdleConns(workerCount / 2)
 	db.SingularTable(true)
@@ -228,12 +234,48 @@ func getDB() *gorm.DB {
 	return &db
 }
 
+func fillCache() {
+
+	log.Println("Filling cache with feeds...")
+	var urls []string
+	db.Model(&nimbus.Feed{}).Pluck("url", &urls)
+	log.Printf("There are %d feeds", len(urls))
+	for _, url := range urls {
+		ca.SetFeed(getFeed(url))
+	}
+	log.Println("Done filling cache with feeds")
+
+	log.Println("Filling cache with aliases...")
+	var aliases []nimbus.Alias
+	db.Find(&aliases)
+	log.Printf("There are %d aliases", len(aliases))
+	for _, alias := range aliases {
+		ca.SetAlias(alias.Alias, alias.Original)
+	}
+	log.Println("Done filling cache with aliases")
+
+	log.Println("Filling cache with invalids...")
+	var invalids []nimbus.Invalid
+	db.Find(&invalids)
+	log.Printf("There are %d invalids", len(invalids))
+	for _, invalid := range invalids {
+		ca.SetInvalid(invalid.URL)
+	}
+	log.Println("Done filling cache with invalids")
+}
+
 func main() {
 
-	db = getDB()
+	db = newDb()
+	defer db.Close()
+
+	ca = nimbus.NewCache(fmt.Sprintf("%s:%s", os.Getenv("REDISHOST"), os.Getenv("REDISPORT")))
+	defer ca.Close()
+	ca.Flush()
+	fillCache()
 
 	// Make custom http client with timeout
-	client = http.Client{
+	client = &http.Client{
 		Timeout: time.Duration(5 * time.Second),
 	}
 

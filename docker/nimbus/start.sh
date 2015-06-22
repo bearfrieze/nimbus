@@ -1,6 +1,8 @@
 #!/bin/bash
-export PGPORT=$PG_PORT_5432_TCP_PORT
 export PGHOST=$PG_PORT_5432_TCP_ADDR
+export PGPORT=$PG_PORT_5432_TCP_PORT
 export PGUSER=postgres
 export PGDATABASE=postgres
+export REDISHOST=$REDIS_PORT_6379_TCP_ADDR
+export REDISPORT=$REDIS_PORT_6379_TCP_PORT
 go run *.go
