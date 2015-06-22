@@ -46,7 +46,7 @@ func (c Cache) Close() {
 	c.pool.Close()
 }
 
-func (c Cache) SetFeed(feed *Feed, queued bool) {
+func (c Cache) SetFeed(url string, feed *Feed, queued bool) {
 	conn := c.pool.Get()
 	defer conn.Close()
 	var value string
@@ -55,14 +55,14 @@ func (c Cache) SetFeed(feed *Feed, queued bool) {
 	} else {
 		marshalled, err := json.Marshal(feed)
 		if err != nil {
-			log.Printf("Unable to marshal feed '%s': %s", feed.URL, err)
+			log.Printf("Unable to marshal feed '%s': %s", url, err)
 			return
 		}
 		value = string(marshalled)
 	}
-	_, err := conn.Do("SET", feed.URL, value)
+	_, err := conn.Do("SET", url, value)
 	if err != nil {
-		log.Printf("Failed to set feed '%s': %s", feed.URL, err)
+		log.Printf("Failed to set feed '%s': %s", url, err)
 	}
 }
 

@@ -200,21 +200,21 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-func getFeed(url string) (*nimbus.Feed, bool) {
+func getFeed(url string) (string, *nimbus.Feed, bool) {
 	if len(url) == 0 {
-		return nil, false
+		return url, nil, false
 	}
 	feed := nimbus.Feed{URL: url}
 	if db.Where(&feed).First(&feed).RecordNotFound() {
 		invalid := nimbus.Invalid{URL: url}
 		if !db.Where(&invalid).First(&invalid).RecordNotFound() {
-			return nil, false
+			return url, nil, false
 		}
 		go queueFeed(url)
-		return nil, true
+		return url, nil, true
 	}
 	db.Model(&feed).Order("published_at desc").Limit(itemLimit).Related(&feed.Items)
-	return &feed, true
+	return url, &feed, true
 }
 
 func newDb() *gorm.DB {
