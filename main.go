@@ -240,8 +240,11 @@ func fillCache() {
 	var urls []string
 	db.Model(&nimbus.Feed{}).Pluck("url", &urls)
 	log.Printf("There are %d feeds", len(urls))
-	for _, url := range urls {
+	for i, url := range urls {
 		ca.SetFeed(getFeed(url))
+		if i%100 == 0 {
+			log.Printf("%d feeds filled into cache\n", i)
+		}
 	}
 	log.Println("Done filling cache with feeds")
 
