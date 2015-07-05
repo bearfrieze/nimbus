@@ -14,22 +14,26 @@ import (
 )
 
 const (
-	pollFrequency   = 15
+	pollFrequency   = 60
 	itemLimit       = 50
 	workerCount     = 20
-	invalidDuration = time.Hour * 24 * 7
+	queueLimit      = 1000
+	invalidDuration = 24 * 7 // One week
 )
 
 var (
-	ca      *nimbus.Cache
-	db      *gorm.DB
-	client  *http.Client
-	queued  map[string]bool = make(map[string]bool)
-	channel chan string     = make(chan string, workerCount)
+	ca     *nimbus.Cache
+	db     *gorm.DB
+	client *http.Client
+	queued map[string]bool = make(map[string]bool)
+	queue  chan string     = make(chan string, queueLimit)
 )
 
 func fetchFeed(url string) (*nimbus.Feed, error) {
 	log.Printf("Fetching %s\n", url)
+	if len(url) == 0 {
+		return nil, fmt.Errorf("Don't fetch the empty url")
+	}
 	r, err := client.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to fetch %s: %s", url, err)
@@ -41,8 +45,8 @@ func fetchFeed(url string) (*nimbus.Feed, error) {
 func saveFeed(feed *nimbus.Feed) error {
 
 	dbFeed := nimbus.Feed{URL: feed.URL}
-	dbDuplicate := nimbus.Feed{Sum: feed.Sum}
 	dbFeedFound := !db.Where(&dbFeed).First(&dbFeed).RecordNotFound()
+	dbDuplicate := nimbus.Feed{Sum: feed.Sum}
 	dbDuplicateFound := !db.Where(&dbDuplicate).First(&dbDuplicate).RecordNotFound()
 
 	if dbDuplicateFound && !(dbFeedFound && dbFeed.ID == dbDuplicate.ID) {
@@ -104,32 +108,33 @@ func deleteFeed(feed *nimbus.Feed) {
 
 func worker() {
 	for {
-		url := <-channel
+		url := <-queue
 		delete(queued, url)
 		pollFeed(url)
 	}
 }
 
 func pollFeed(url string) {
-
 	log.Printf("Polling %s\n", url)
-
 	feed, err := fetchFeed(url)
 	if err != nil {
-		log.Printf("Marking %s as invalid: %s", url, err)
-		db.Create(&nimbus.Invalid{URL: url, Error: err.Error()})
-		db.Model(&nimbus.Feed{}).Where("url = ?", url).UpdateColumn("next_poll_at", time.Now().Add(invalidDuration))
+		log.Printf("Marking %s as invalid: %s\n", url, err)
+		dbFeed := nimbus.Feed{URL: url}
+		if db.Where(&dbFeed).First(&dbFeed).RecordNotFound() {
+			ca.Set(url, "false")
+			ca.Expire(url, int(invalidDuration*time.Hour/time.Second))
+		} else {
+			dbFeed.NextPollAt = time.Now().Add(invalidDuration * time.Hour)
+			db.Omit("Items", "CreatedAt").Save(&dbFeed)
+			setFeedInCache(url)
+		}
 		return
 	}
-
-	err = saveFeed(feed)
-	if err != nil {
+	if err = saveFeed(feed); err != nil {
 		log.Printf("Failed to save %s: %s\n", url, err)
 		return
 	}
-
-	ca.SetFeed(getFeed(url))
-
+	setFeedInCache(url)
 	log.Printf("Polled %s, next poll at %v\n", url, feed.NextPollAt)
 }
 
@@ -138,8 +143,12 @@ func queueFeed(url string) {
 		log.Printf("Already polling %s\n", url)
 		return
 	}
-	queued[url] = true
-	channel <- url
+	select {
+	case queue <- url:
+		queued[url] = true
+	default:
+		log.Println("Queue is full")
+	}
 }
 
 func pollFeeds(now *time.Time) {
@@ -150,16 +159,6 @@ func pollFeeds(now *time.Time) {
 
 	for _, url := range urls {
 		go queueFeed(url)
-	}
-}
-
-func cleanInvalid(now *time.Time) {
-	var invalids []nimbus.Invalid
-	aWeekAgo := time.Now().Add(-(invalidDuration - pollFrequency))
-	db.Where("created_at < ?", aWeekAgo).Find(&invalids)
-	for _, invalid := range invalids {
-		db.Delete(&invalid)
-		ca.RemoveInvalid(invalid.URL)
 	}
 }
 
@@ -194,27 +193,18 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, url := range missing {
+		ca.Set(url, "true")
 		go queueFeed(url)
 	}
 
 	w.Write(json)
 }
 
-func getFeed(url string) (string, *nimbus.Feed, bool) {
-	if len(url) == 0 {
-		return url, nil, false
-	}
+func setFeedInCache(url string) {
 	feed := nimbus.Feed{URL: url}
-	if db.Where(&feed).First(&feed).RecordNotFound() {
-		invalid := nimbus.Invalid{URL: url}
-		if !db.Where(&invalid).First(&invalid).RecordNotFound() {
-			return url, nil, false
-		}
-		go queueFeed(url)
-		return url, nil, true
-	}
+	db.Where(&feed).First(&feed)
 	db.Model(&feed).Order("published_at desc").Limit(itemLimit).Related(&feed.Items)
-	return url, &feed, true
+	ca.SetFeed(url, &feed)
 }
 
 func newDb() *gorm.DB {
@@ -230,7 +220,7 @@ func newDb() *gorm.DB {
 	db.DB().SetMaxOpenConns(workerCount)
 	db.DB().SetMaxIdleConns(workerCount / 2)
 	db.SingularTable(true)
-	db.AutoMigrate(&nimbus.Feed{}, &nimbus.Item{}, &nimbus.Alias{}, &nimbus.Invalid{})
+	db.AutoMigrate(&nimbus.Feed{}, &nimbus.Item{}, &nimbus.Alias{})
 	return &db
 }
 
@@ -241,7 +231,7 @@ func fillCache() {
 	db.Model(&nimbus.Feed{}).Pluck("url", &urls)
 	log.Printf("There are %d feeds", len(urls))
 	for i, url := range urls {
-		ca.SetFeed(getFeed(url))
+		setFeedInCache(url)
 		if i%100 == 0 {
 			log.Printf("%d feeds filled into cache\n", i)
 		}
@@ -256,15 +246,6 @@ func fillCache() {
 		ca.SetAlias(alias.Alias, alias.Original)
 	}
 	log.Println("Done filling cache with aliases")
-
-	log.Println("Filling cache with invalids...")
-	var invalids []nimbus.Invalid
-	db.Find(&invalids)
-	log.Printf("There are %d invalids", len(invalids))
-	for _, invalid := range invalids {
-		ca.SetInvalid(invalid.URL)
-	}
-	log.Println("Done filling cache with invalids")
 }
 
 func main() {
@@ -292,7 +273,6 @@ func main() {
 		for now := range time.Tick(pollFrequency * time.Second) {
 			log.Printf("Queue length: %d\n", len(queued))
 			go pollFeeds(&now)
-			go cleanInvalid(&now)
 		}
 	}()
 
