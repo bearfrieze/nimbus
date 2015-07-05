@@ -96,7 +96,8 @@ func (c Cache) GetFeeds(urls []string) (map[string]*json.RawMessage, []string) {
 	for i, _ := range urls {
 		alias, _ := redis.String(conn.Receive())
 		if alias != "" {
-			urls[i] = alias
+			conn.Send("GET", alias)
+			continue
 		}
 		conn.Send("GET", urls[i])
 	}
