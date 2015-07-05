@@ -138,16 +138,18 @@ func pollFeed(url string) {
 	log.Printf("Polled %s, next poll at %v\n", url, feed.NextPollAt)
 }
 
-func queueFeed(url string) {
+func queueFeed(url string) bool {
 	if _, exists := queued[url]; exists {
 		log.Printf("Already polling %s\n", url)
-		return
+		return true
 	}
 	select {
 	case queue <- url:
 		queued[url] = true
+		return true
 	default:
 		log.Println("Queue is full")
+		return false
 	}
 }
 
@@ -158,7 +160,9 @@ func pollFeeds(now *time.Time) {
 	db.Model(&nimbus.Feed{}).Where("next_poll_at < ?", nextPoll).Pluck("url", &urls)
 
 	for _, url := range urls {
-		go queueFeed(url)
+		if !queueFeed(url) {
+			break
+		}
 	}
 }
 
@@ -194,7 +198,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	for _, url := range missing {
 		ca.Set(url, "true")
-		go queueFeed(url)
+		if !queueFeed(url) {
+			break
+		}
 	}
 
 	w.Write(json)
