@@ -16,7 +16,7 @@ import (
 const (
 	pollFrequency   = 60
 	itemLimit       = 50
-	workerCount     = 20
+	workerCount     = 80
 	queueLimit      = 1000
 	invalidDuration = 24 * 7 // One week
 )
@@ -153,10 +153,10 @@ func queueFeed(url string) bool {
 	}
 }
 
-func pollFeeds(now *time.Time) {
+func pollFeeds() {
 
 	var urls []string
-	var nextPoll = now.Add((pollFrequency + 1) * time.Second)
+	var nextPoll = time.Now().Add((pollFrequency + 1) * time.Second)
 	db.Model(&nimbus.Feed{}).Where("next_poll_at < ?", nextPoll).Pluck("url", &urls)
 
 	for _, url := range urls {
@@ -274,10 +274,11 @@ func main() {
 	}
 
 	// Start polling feeds
+	go pollFeeds()
 	go func() {
-		for now := range time.Tick(pollFrequency * time.Second) {
+		for _ = range time.Tick(pollFrequency * time.Second) {
 			log.Printf("Queue length: %d\n", len(queued))
-			go pollFeeds(&now)
+			go pollFeeds()
 		}
 	}()
 
