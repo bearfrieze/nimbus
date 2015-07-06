@@ -29,8 +29,14 @@ var (
 	queue  chan string     = make(chan string, queueLimit)
 )
 
+type logData map[string]interface{}
+
+func logJson(data logData) {
+	marshalled, _ := json.Marshal(data)
+	log.Println(string(marshalled))
+}
+
 func fetchFeed(url string) (*nimbus.Feed, error) {
-	log.Printf("Fetching %s\n", url)
 	if len(url) == 0 {
 		return nil, fmt.Errorf("Don't fetch the empty url")
 	}
@@ -89,18 +95,18 @@ func createAlias(alias *nimbus.Feed, original *nimbus.Feed, delete bool) {
 	if alias.URL == original.URL {
 		return
 	}
-	log.Printf("Creating alias %s for %s\n", alias.URL, original.URL)
+	logJson(logData{"event": "alias", "alias": alias.URL, "original": original.URL})
 	db.Create(&nimbus.Alias{Alias: alias.URL, Original: original.URL})
 
 	ca.SetAlias(alias.URL, original.URL)
 
 	if delete {
+		logJson(logData{"event": "delete", "url": alias.URL})
 		deleteFeed(alias)
 	}
 }
 
 func deleteFeed(feed *nimbus.Feed) {
-	log.Printf("Deleting %s\n", feed.URL)
 	db.Where(&nimbus.Alias{Original: feed.URL}).Delete(nimbus.Alias{})
 	db.Where(&nimbus.Item{FeedID: feed.ID}).Delete(nimbus.Item{})
 	db.Delete(feed)
@@ -115,10 +121,11 @@ func worker() {
 }
 
 func pollFeed(url string) {
-	log.Printf("Polling %s\n", url)
+	logJson(logData{"event": "poll", "url": url})
+	logJson(logData{"event": "fetch", "url": url})
 	feed, err := fetchFeed(url)
 	if err != nil {
-		log.Printf("Marking %s as invalid: %s\n", url, err)
+		logJson(logData{"event": "fetchFail", "url": url, "err": err})
 		dbFeed := nimbus.Feed{URL: url}
 		if db.Where(&dbFeed).First(&dbFeed).RecordNotFound() {
 			ca.Set(url, "false")
@@ -128,19 +135,19 @@ func pollFeed(url string) {
 			db.Omit("Items", "CreatedAt").Save(&dbFeed)
 			setFeedInCache(url)
 		}
-		return
+	} else {
+		logJson(logData{"event": "save", "url": url})
+		if err = saveFeed(feed); err != nil {
+			logJson(logData{"event": "saveFail", "url": url, "err": err})
+			return
+		}
+		setFeedInCache(url)
 	}
-	if err = saveFeed(feed); err != nil {
-		log.Printf("Failed to save %s: %s\n", url, err)
-		return
-	}
-	setFeedInCache(url)
-	log.Printf("Polled %s, next poll at %v\n", url, feed.NextPollAt)
+	logJson(logData{"event": "pollEnd", "url": url})
 }
 
 func queueFeed(url string) bool {
 	if _, exists := queued[url]; exists {
-		log.Printf("Already polling %s\n", url)
 		return true
 	}
 	select {
@@ -148,7 +155,7 @@ func queueFeed(url string) bool {
 		queued[url] = true
 		return true
 	default:
-		log.Println("Queue is full")
+		logJson(logData{"event": "queueFull"})
 		return false
 	}
 }
@@ -207,6 +214,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func setFeedInCache(url string) {
+	logJson(logData{"event": "cache", "url": url})
 	feed := nimbus.Feed{URL: url}
 	db.Where(&feed).First(&feed)
 	db.Model(&feed).Order("published_at desc").Limit(itemLimit).Related(&feed.Items)
@@ -256,6 +264,9 @@ func fillCache() {
 
 func main() {
 
+	// Increase logging precision
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+
 	db = newDb()
 	defer db.Close()
 
@@ -277,7 +288,7 @@ func main() {
 	go pollFeeds()
 	go func() {
 		for _ = range time.Tick(pollFrequency * time.Second) {
-			log.Printf("Queue length: %d\n", len(queued))
+			logJson(logData{"event": "queueLength", "length": len(queued)})
 			go pollFeeds()
 		}
 	}()
