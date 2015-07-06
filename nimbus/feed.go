@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 const (
@@ -73,12 +74,16 @@ func cleanText(text string) string {
 	text = sanitize.HTML(text)
 	text = strings.Replace(text, "\n", " ", -1)
 	text = rexRepeatWhitespace.ReplaceAllLiteralString(text, "")
+	if !utf8.ValidString(text) {
+		text = ""
+	}
 	return strings.TrimSpace(text)
 }
 
 func limitStringLength(text string, limit int) string {
-	if len(text) > limit {
-		return text[:limit]
+	runes := []rune(text)
+	if len(runes) > limit {
+		return string(runes[:limit])
 	}
 	return text
 }
@@ -92,8 +97,7 @@ func NewFeed(url string, data []byte) (*Feed, error) {
 	for key, item := range f.Items {
 		item.Title = limitStringLength(cleanText(item.Title), 255)
 		item.URL = limitStringLength(item.URL, 255)
-		item.Teaser = ""
-		// item.Teaser = limitStringLength(cleanText(item.Teaser), 1000)
+		item.Teaser = limitStringLength(cleanText(item.Teaser), 1000)
 		if item.GUID == "" {
 			item.GUID = fmt.Sprintf(
 				"%x:%x:%d",
