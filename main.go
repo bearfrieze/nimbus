@@ -125,7 +125,7 @@ func pollFeed(url string) {
 	logJson(logData{"event": "fetch", "url": url})
 	feed, err := fetchFeed(url)
 	if err != nil {
-		logJson(logData{"event": "fetchFail", "url": url, "err": err})
+		logJson(logData{"event": "fetchFail", "url": url, "err": err.Error()})
 		dbFeed := nimbus.Feed{URL: url}
 		if db.Where(&dbFeed).First(&dbFeed).RecordNotFound() {
 			ca.Set(url, "false")
@@ -138,7 +138,7 @@ func pollFeed(url string) {
 	} else {
 		logJson(logData{"event": "save", "url": url})
 		if err = saveFeed(feed); err != nil {
-			logJson(logData{"event": "saveFail", "url": url, "err": err})
+			logJson(logData{"event": "saveFail", "url": url, "err": err.Error()})
 			return
 		}
 		setFeedInCache(url)
