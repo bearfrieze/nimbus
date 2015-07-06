@@ -261,7 +261,7 @@ func main() {
 
 	ca = nimbus.NewCache(fmt.Sprintf("%s:%s", os.Getenv("REDISHOST"), os.Getenv("REDISPORT")))
 	defer ca.Close()
-	go fillCache()
+	// go fillCache()
 
 	// Make custom http client with timeout
 	client = &http.Client{
