@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/bearfrieze/nimbus/nimbus"
 	"github.com/jinzhu/gorm"
@@ -205,6 +206,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	for _, url := range missing {
 		ca.Set(url, "true")
+		ca.Expire(url, 60)
 		if !queueFeed(url) {
 			break
 		}
@@ -264,6 +266,9 @@ func fillCache() {
 
 func main() {
 
+	flush := flag.Bool("flush", false, "enable this to flush cache")
+	flag.Parse()
+
 	// Increase logging precision
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
@@ -272,7 +277,10 @@ func main() {
 
 	ca = nimbus.NewCache(fmt.Sprintf("%s:%s", os.Getenv("REDISHOST"), os.Getenv("REDISPORT")))
 	defer ca.Close()
-	// go fillCache()
+	if *flush {
+		ca.Flush()
+		go fillCache()
+	}
 
 	// Make custom http client with timeout
 	client = &http.Client{
