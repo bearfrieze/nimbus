@@ -77,14 +77,16 @@ func main() {
 			}
 		}
 		sort.Ints(deltas[join])
+		count := len(deltas[join])
+		fmt.Printf("%s(%d)\n", join, count)
+		if count == 0 {
+			continue
+		}
 		sum := 0
 		for _, delta := range deltas[join] {
 			sum += delta
 		}
-		count := len(deltas[join])
-		average := sum / count
-		fmt.Printf("%s(%d)\n", join, count)
-		fmt.Printf("av: %d\n", average)
+		fmt.Printf("av: %d\n", sum/count)
 		for i := 1; i < 4; i++ {
 			fmt.Printf("q%d: %d\n", i, deltas[join][count*i/4])
 		}
