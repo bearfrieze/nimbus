@@ -4,6 +4,9 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/gonum/plot"
+	"github.com/gonum/plot/plotter"
+	"github.com/gonum/plot/vg"
 	"os"
 	"sort"
 	"time"
@@ -58,10 +61,13 @@ func main() {
 		{"save", "cache"},
 		{"cache", "pollEnd"},
 	}
-	deltas := map[string][]int{}
-	for _, pair := range pairs {
-		join := fmt.Sprintf("%s->%s", pair[0], pair[1])
-		deltas[join] = make([]int, 0)
+	p, _ := plot.New()
+	p.Add(plotter.NewGrid())
+	keys := make([]string, 0)
+	for i, pair := range pairs {
+		key := fmt.Sprintf("%s->%s", pair[0], pair[1])
+		keys = append(keys, key)
+		deltas := make([]float64, 0)
 		for url := range polls {
 			for _, poll := range polls[url] {
 				start, startExists := poll[pair[0]]
@@ -69,26 +75,36 @@ func main() {
 				if !startExists || !stopExists {
 					continue
 				}
-				delta := int(stop.Sub(start).Nanoseconds() / 1000000)
+				delta := stop.Sub(start).Seconds()
 				if delta < 0 {
 					continue
 				}
-				deltas[join] = append(deltas[join], delta)
+				deltas = append(deltas, delta)
 			}
 		}
-		sort.Ints(deltas[join])
-		count := len(deltas[join])
-		fmt.Printf("%s(%d)\n", join, count)
-		if count == 0 {
+		fmt.Printf("%s(%d)\n", key, len(deltas))
+
+		if len(deltas) == 0 {
 			continue
 		}
-		sum := 0
-		for _, delta := range deltas[join] {
+		sort.Float64s(deltas)
+		count := float64(len(deltas))
+		var sum float64
+		for _, delta := range deltas {
 			sum += delta
 		}
-		fmt.Printf("av: %d\n", sum/count)
+		fmt.Printf("av: %f\n", sum/count)
 		for i := 1; i < 4; i++ {
-			fmt.Printf("q%d: %d\n", i, deltas[join][count*i/4])
+			fmt.Printf("q%d: %f\n", i, deltas[len(deltas)*i/4])
 		}
+
+		selection := deltas[int(count*0.1):int(count*0.9)] // Unfortunate but necessary step, too many outliers
+		b, _ := plotter.MakeHorizBoxPlot(vg.Points(20), float64(i), plotter.Values(selection))
+		p.Add(b)
+	}
+
+	p.NominalY(keys...)
+	if err := p.Save(10*vg.Inch, 5*vg.Inch, "boxplot.png"); err != nil {
+		panic(err)
 	}
 }
