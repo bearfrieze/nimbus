@@ -20,4 +20,4 @@ The goal of Nimbus is to have none of the drawbacks of the Google Feeds API, whi
 
 ## Concept
 
-Nimbus stores feed information in a PostgreSQL database and maintains shallow JSON representations of feeds in a Redis cache. When handling batch feed requests Nimbus compiles cache hits to a single JSON array of feeds and adds any missing feeds to the polling queue afterwards.
+Nimbus stores feed information in a PostgreSQL database and maintains shallow JSON representations of feeds in a Redis cache. When handling batch feed requests Nimbus concatenates cache hits into a single JSON array of feeds and adds any missing feeds to the polling queue afterwards.
